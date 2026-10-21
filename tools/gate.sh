@@ -18,28 +18,40 @@
 # Usage: gate.sh [--quick]   (--quick skips the windows-target steps)
 set -euo pipefail
 QUICK=0
-[ "${1:-}" = "--quick" ] && QUICK=1
+case "${1:-}" in
+  --quick) QUICK=1 ;;
+  "") ;;
+  *) echo "Usage: gate.sh [--quick]" >&2; exit 2 ;;
+esac
+if [ "$#" -gt 1 ]; then echo "Usage: gate.sh [--quick]" >&2; exit 2; fi
+if [ "$QUICK" -eq 0 ]; then
+  installed=$(rustup target list --installed)
+  if ! printf '%s\n' "$installed" | grep -qx 'x86_64-pc-windows-msvc'; then
+    echo "FAILED: install required target: rustup target add x86_64-pc-windows-msvc; use --quick for a partial host check" >&2
+    exit 1
+  fi
+fi
 
 step() { printf '\n== %s ==\n' "$1"; }
 
 step "cargo fmt --all -- --check"
 cargo fmt --all -- --check
 
-step "cargo clippy --all-targets (host)"
-cargo clippy --all-targets -- -D warnings
+step "cargo clippy --workspace --all-targets --locked (host)"
+cargo clippy --workspace --all-targets --locked -- -D warnings
 
 if [ "$QUICK" -eq 0 ]; then
-  if rustup target list --installed | grep -q '^x86_64-pc-windows-msvc'; then
-    step "cargo clippy --target x86_64-pc-windows-msvc --all-targets"
-    cargo clippy --target x86_64-pc-windows-msvc --all-targets -- -D warnings
-    step "cargo check --target x86_64-pc-windows-msvc --all-targets"
-    cargo check --target x86_64-pc-windows-msvc --all-targets
-  else
-    echo "SKIP: x86_64-pc-windows-msvc target not installed (rustup target add x86_64-pc-windows-msvc)"
-  fi
+  step "cargo clippy --workspace --target x86_64-pc-windows-msvc --all-targets --locked"
+  cargo clippy --workspace --target x86_64-pc-windows-msvc --all-targets --locked -- -D warnings
+  step "cargo check --workspace --target x86_64-pc-windows-msvc --all-targets --locked"
+  cargo check --workspace --target x86_64-pc-windows-msvc --all-targets --locked
 fi
 
-step "cargo test (full suite)"
-cargo test
+step "cargo test --workspace --locked (full suite)"
+cargo test --workspace --locked
 
-printf '\nGATE GREEN\n'
+if [ "$QUICK" -eq 1 ]; then
+  printf '\nPARTIAL: host checks passed; Windows target checks not run\n'
+else
+  printf '\nGATE GREEN: host + Windows cross-checks passed; native Windows link/runtime still requires CI\n'
+fi
