@@ -17,3 +17,5 @@ Sean's projects (Oct 2026), not hypothetical best practice.
 | 10 | Manifest/DPI/long-path setup redone (or forgotten) per app | multiple | `templates/app-manifests/` |
 | 11 | Release steps re-derived per project | all | `templates/checklists/release.md` |
 | 12 | Starting each new DLL from a blank cargo project | DLL collection #1 took a full session to scaffold | `tools/scaffold-dll.py` + `templates/dll-skeleton/` |
+
+| 14 | Cleanup and recovery behavior needs repeatable disposable test data; size-only checks miss same-size changes | InstallScope cleanup/report and storage batches | `tools/fixtures.py` (synthetic trees, SHA-256 inventory, exact-change assertions) |
