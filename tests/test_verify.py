@@ -22,6 +22,37 @@ class VerifyTests(unittest.TestCase):
         self.assertIn('warnings', commands['host-lint'])
         self.assertNotIn('warnings', dict(v.plan([], allow_warnings=True))['host-lint'])
 
+    def test_quick_profile_keeps_host_feedback_and_omits_full_gate_steps(self):
+        commands = dict(v.plan(['x86_64-pc-windows-msvc'], profile='quick'))
+        self.assertEqual(set(commands), {'format', 'host-lint', 'tests'})
+        self.assertIn('--all-targets', commands['tests'])
+        self.assertNotIn('doctests', commands)
+        self.assertNotIn('host-build', commands)
+        self.assertNotIn('x86_64-pc-windows-msvc-check', commands)
+
+    def test_quick_profile_is_reported_as_partial_coverage(self):
+        from unittest.mock import patch
+        import json
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder) / 'project'
+            root.mkdir()
+            (root / 'Cargo.toml').write_text('[package]')
+            source = dict(status='available', sha256='stable', revision='abc')
+            result = dict(status='passed', exit_code=0, seconds=0.0, log='unused')
+            with (patch.object(v, 'probe', return_value=dict(exit_code=0, text='')),
+                  patch.object(v, 'source_state', return_value=source),
+                  patch.object(v, 'execute', return_value=result)):
+                code = v.main([str(root), '--profile', 'quick', '--output', str(Path(folder) / 'evidence')])
+            report = json.loads(next((Path(folder) / 'evidence').glob('*/report.json')).read_text())
+            self.assertEqual(code, 0)
+            self.assertEqual(report['status'], 'passed_with_limits')
+            self.assertEqual(report['profile'], 'quick')
+            self.assertFalse(report['coverage']['full_profile'])
+            self.assertEqual(report['coverage']['included_steps'], ['format', 'host-lint', 'tests'])
+            self.assertEqual(report['coverage']['excluded_steps'], ['doctests', 'host-build'])
+            skipped = {step['name'] for step in report['steps'] if step['status'] == 'skipped'}
+            self.assertTrue({'doctests', 'host-build'} <= skipped)
+
     def test_failures_timeouts_and_unavailable_commands_are_not_passes(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)

@@ -5,6 +5,7 @@ Run from any directory with Python 3.10 or newer:
 ```sh
 python /path/to/WinDevKit/tools/verify.py /path/to/project --offline
 python /path/to/WinDevKit/tools/verify.py /path/to/project --doctor
+python /path/to/WinDevKit/tools/verify.py /path/to/project --profile quick
 python -m unittest discover -s tests -v
 ```
 
@@ -13,6 +14,15 @@ Clippy, the full all-target test suite, doctests, a host build, and Clippy/check
 for installed Windows targets. Commands run sequentially to avoid Cargo lock
 contention. All Cargo dependency resolution is locked. It never installs tools,
 downloads DLLs, changes source, repairs Git, publishes, or invokes a shell.
+The default `--profile full` is the complete gate. Use `--profile quick` during
+an edit/test loop to run formatting, strict host Clippy, and host tests while
+leaving doctests, a separate host build, and Windows-target checks out. The
+quick profile does not accept `--target`. Reports list the profile, included
+and excluded steps, and mark excluded work as `skipped`; a successful quick run
+is therefore `passed_with_limits`, never a full-gate `passed`. Run the full
+profile before relying on Windows-target coverage or treating the project as
+fully verified. Report schema version 2 adds profile/coverage fields and keeps
+each command and result explicit.
 Cargo itself executes project build scripts and tests: only use full mode on
 reviewed projects. Doctor mode runs Git/toolchain probes and fingerprints source without executing Cargo.
 

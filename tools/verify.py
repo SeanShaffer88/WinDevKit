@@ -31,7 +31,7 @@ def execute(command, cwd, log, timeout):
                 seconds=round(time.monotonic() - started, 3), log=str(log))
 
 
-def plan(targets, allow_warnings=False, offline=False):
+def plan(targets, allow_warnings=False, offline=False, profile='full'):
     flags = ['--locked'] + (['--offline'] if offline else [])
     lint = [] if allow_warnings else ['--', '-D', 'warnings']
     steps = [('format', ['cargo', 'fmt', '--all', '--', '--check']),
@@ -43,6 +43,10 @@ def plan(targets, allow_warnings=False, offline=False):
         steps.extend([
             (f'{target}-lint', ['cargo', 'clippy', '--all-targets', '--target', target, *flags, *lint]),
             (f'{target}-check', ['cargo', 'check', '--all-targets', '--target', target, *flags])])
+    if profile == 'quick':
+        return [step for step in steps if step[0] in ('format', 'host-lint', 'tests')]
+    if profile != 'full':
+        raise ValueError(f'Unknown verification profile: {profile}')
     return steps
 
 
@@ -133,6 +137,8 @@ def main(argv=None):
     parser.add_argument('--allow-warnings', action='store_true', help='Record existing warnings without denying them')
     parser.add_argument('--timeout', type=float, default=900, help='Seconds per command')
     parser.add_argument('--target', action='append', default=[], help='Additional installed Windows target')
+    parser.add_argument('--profile', choices=('full', 'quick'), default='full',
+                        help='quick runs format, host Clippy, and host tests; full is the complete gate')
     parser.add_argument('--doctor', action='store_true', help='Inspect only; do not run Cargo/build scripts')
     args = parser.parse_args(argv)
     root = args.project.resolve()
@@ -140,12 +146,15 @@ def main(argv=None):
         parser.error('project must contain Cargo.toml')
     if not math.isfinite(args.timeout) or args.timeout <= 0:
         parser.error('timeout must be positive')
+    if args.profile == 'quick' and args.target:
+        parser.error('--target requires the full profile')
     parent = args.output.resolve() if args.output else Path(tempfile.gettempdir()) / 'windevkit-evidence'
     parent.mkdir(parents=True, exist_ok=True)
     out = Path(tempfile.mkdtemp(prefix='verify-', dir=parent))
-    report = dict(schema_version=1, project=str(root), host=platform.platform(),
+    report = dict(schema_version=2, project=str(root), host=platform.platform(),
                   warning_policy='allow' if args.allow_warnings else 'deny',
-                  offline=args.offline, doctor=args.doctor, status='in_progress', steps=[])
+                  offline=args.offline, doctor=args.doctor, profile=args.profile,
+                  status='in_progress', steps=[])
     for name, command in [('git', ['git', 'status', '--short', '--branch']),
                           ('rustc', ['rustc', '-Vv']), ('cargo', ['cargo', '-V']),
                           ('targets', ['rustup', 'target', 'list', '--installed'])]:
@@ -161,12 +170,23 @@ def main(argv=None):
     save_report(out, report)
     if not args.doctor:
         missing = [t for t in targets if t not in installed]
-        for name, command in plan([t for t in targets if t in installed], args.allow_warnings, args.offline):
+        available = [t for t in targets if t in installed]
+        full_plan = plan(available, args.allow_warnings, args.offline)
+        selected_plan = plan(available, args.allow_warnings, args.offline, args.profile)
+        selected_names = {name for name, _ in selected_plan}
+        omitted = [name for name, _ in full_plan if name not in selected_names]
+        report['coverage'] = dict(full_profile=args.profile == 'full',
+                                  included_steps=[name for name, _ in selected_plan],
+                                  excluded_steps=omitted)
+        for name, command in selected_plan:
             print(f'Running {name}', flush=True)
             result = execute(command, root, out / f'{name}.log', args.timeout)
             report['steps'].append(dict(name=name, **result))
             # Persist after each step, so interrupted batches retain completed evidence.
             save_report(out, report)
+        for name in omitted:
+            report['steps'].append(dict(name=name, status='skipped',
+                                        reason=f'Excluded by the {args.profile} profile'))
         for target in missing:
             report['steps'].append(dict(name=target, status='unavailable', reason='Target not installed'))
         if not targets:
