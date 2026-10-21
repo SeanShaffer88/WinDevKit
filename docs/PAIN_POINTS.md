@@ -17,3 +17,5 @@ Sean's projects (Oct 2026), not hypothetical best practice.
 | 10 | Manifest/DPI/long-path setup redone (or forgotten) per app | multiple | `templates/app-manifests/` |
 | 11 | Release steps re-derived per project | all | `templates/checklists/release.md` |
 | 12 | Starting each new DLL from a blank cargo project | DLL collection #1 took a full session to scaffold | `tools/scaffold-dll.py` + `templates/dll-skeleton/` |
+
+| 13 | Repeated manual verification commands, lost results between sessions, broken copied Git worktree pointer | InstallScope continuation, 2026-10-21 | `tools/verify.py` (preflight, full checks, timed logs, JSON evidence; no cached passes) |
