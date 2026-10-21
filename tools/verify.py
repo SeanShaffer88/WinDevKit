@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Portable Rust verification with durable evidence. Python 3.10+, stdlib only."""
 import argparse
+import hashlib
+import stat
 import json
 import math
 import os
@@ -58,6 +60,58 @@ def probe(command, root):
         return dict(exit_code=None, text=str(error))
 
 
+def source_state(root):
+    """Fingerprint Git-listed worktree bytes without reading link targets."""
+    try:
+        result = subprocess.run(['git', 'ls-files', '-z', '--cached', '--others', '--exclude-standard'],
+                                cwd=root, capture_output=True, timeout=15, check=True)
+        names = sorted(set(result.stdout.split(b'\0')) - {b''})
+        if len(names) > 100000 or len(result.stdout) > 16 * 1024 * 1024:
+            raise ValueError('Source inventory limit exceeded')
+        digest = hashlib.sha256()
+        total = 0
+        for name in names:
+            path = root / os.fsdecode(name)
+            digest.update(len(name).to_bytes(8, 'big'))
+            digest.update(name)
+            try:
+                meta = path.lstat()
+            except FileNotFoundError:
+                digest.update(b'missing')
+                continue
+            if stat.S_ISLNK(meta.st_mode):
+                content = os.fsencode(os.readlink(path))
+                digest.update(b'link')
+            elif stat.S_ISREG(meta.st_mode):
+                if getattr(meta, 'st_file_attributes', 0) & 0x400:
+                    raise ValueError('Reparse entry prevents source fingerprinting')
+                with path.open('rb') as stream:
+                    content = stream.read(128 * 1024 * 1024 - total + 1)
+                digest.update(b'file')
+            else:
+                raise ValueError('Submodule, directory, or special source entry not fingerprinted')
+            total += len(content)
+            if total > 128 * 1024 * 1024:
+                raise ValueError('Source byte limit exceeded')
+            digest.update((meta.st_mode & 0o111).to_bytes(2, 'big'))
+            digest.update(len(content).to_bytes(8, 'big'))
+            digest.update(content)
+        head = probe(['git', 'rev-parse', '--verify', 'HEAD'], root)
+        return dict(status='available', sha256=digest.hexdigest(), files=len(names),
+                    bytes=total, revision=head['text'] if head['exit_code'] == 0 else None)
+    except (OSError, ValueError, subprocess.SubprocessError) as error:
+        return dict(status='unavailable', reason=str(error))
+
+
+def source_check(before, after):
+    if before['status'] != 'available' or after['status'] != 'available':
+        return dict(name='source-stability', status='skipped',
+                    reason='Source fingerprint unavailable; results cannot establish unchanged inputs')
+    stable = before == after
+    return dict(name='source-stability', status='passed' if stable else 'failed',
+                reason='Git-listed inputs unchanged' if stable else 'Inputs changed during verification; rerun checks')
+
+
 def save_report(out, report):
     # Staged replacement preserves the preceding checkpoint if writing fails.
     staged = out / 'report.json.tmp'
@@ -103,6 +157,8 @@ def main(argv=None):
         report['limits'].append('Git state unavailable; do not assume a clean or publishable checkout.')
     installed = report['targets']['text'].splitlines() if report['targets']['exit_code'] == 0 else []
     targets = list(dict.fromkeys(args.target or [t for t in installed if 'windows' in t]))
+    report['source_before'] = source_state(root)
+    save_report(out, report)
     if not args.doctor:
         missing = [t for t in targets if t not in installed]
         for name, command in plan([t for t in targets if t in installed], args.allow_warnings, args.offline):
@@ -117,6 +173,8 @@ def main(argv=None):
             report['steps'].append(dict(name='windows-checks', status='skipped', reason='No Windows targets installed'))
         if os.name != 'nt':
             report['steps'].append(dict(name='windows-native-build', status='skipped', reason='Requires Windows runner'))
+        report['source_after'] = source_state(root)
+        report['steps'].append(source_check(report['source_before'], report['source_after']))
         report['status'] = overall(report['steps'])
     else:
         report['status'] = 'inspection_only'

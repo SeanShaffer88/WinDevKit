@@ -51,6 +51,55 @@ class VerifyTests(unittest.TestCase):
             self.assertEqual(json.loads((root / 'report.json').read_text())['status'], 'in_progress')
             self.assertFalse((root / 'report.json.tmp').exists())
 
+    def test_fingerprint_detects_edits_additions_and_deletions(self):
+        import subprocess
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            subprocess.run(['git', 'init', '--quiet', str(root)], check=True)
+            path = root / 'input.rs'
+            path.write_text('before')
+            first = v.source_state(root)
+            self.assertEqual(first['status'], 'available')
+            self.assertEqual(v.source_check(first, v.source_state(root))['status'], 'passed')
+            path.write_text('after!')  # Same size, different bytes.
+            self.assertEqual(v.source_check(first, v.source_state(root))['status'], 'failed')
+            path.write_text('before')
+            extra = root / 'new.rs'
+            extra.write_text('new')
+            self.assertEqual(v.source_check(first, v.source_state(root))['status'], 'failed')
+            extra.unlink()
+            self.assertEqual(first, v.source_state(root))
+            subprocess.run(['git', 'add', 'input.rs'], cwd=root, check=True)
+            tracked = v.source_state(root)
+            path.unlink()
+            self.assertEqual(v.source_check(tracked, v.source_state(root))['status'], 'failed')
+
+    def test_source_change_during_successful_checks_fails_batch(self):
+        import subprocess
+        from unittest.mock import patch
+        import json
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder) / 'project'
+            root.mkdir()
+            subprocess.run(['git', 'init', '--quiet', str(root)], check=True)
+            source = root / 'Cargo.toml'
+            source.write_text('[package]')
+            def changed(command, cwd, log, timeout):
+                source.write_text('[package] # edited during checks')
+                return dict(status='passed', exit_code=0, command=command, seconds=0, log=str(log))
+            with patch.object(v, 'plan', return_value=[('fake', ['fake'])]), patch.object(v, 'execute', side_effect=changed):
+                code = v.main([str(root), '--output', str(Path(folder) / 'evidence')])
+            self.assertEqual(code, 1)
+            report = json.loads(next((Path(folder) / 'evidence').glob('*/report.json')).read_text())
+            self.assertEqual(report['status'], 'failed')
+            self.assertEqual(report['steps'][-1]['name'], 'source-stability')
+            self.assertEqual(report['steps'][-1]['status'], 'failed')
+
+    def test_missing_fingerprint_is_never_a_pass(self):
+        missing = dict(status='unavailable', reason='broken Git')
+        self.assertEqual(v.source_check(missing, missing)['status'], 'skipped')
+        self.assertEqual(v.overall([v.source_check(missing, missing)]), 'passed_with_limits')
+
     def test_doctor_records_broken_git_without_running_cargo(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)

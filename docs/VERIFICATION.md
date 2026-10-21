@@ -14,7 +14,7 @@ for installed Windows targets. Commands run sequentially to avoid Cargo lock
 contention. All Cargo dependency resolution is locked. It never installs tools,
 downloads DLLs, changes source, repairs Git, publishes, or invokes a shell.
 Cargo itself executes project build scripts and tests: only use full mode on
-reviewed projects. Doctor mode runs Git status and toolchain probes only.
+reviewed projects. Doctor mode runs Git/toolchain probes and fingerprints source without executing Cargo.
 
 Strict warnings are the default. For a project with known warnings, explicitly
 use `--allow-warnings`; the report records the relaxed policy and compiler logs
@@ -42,3 +42,21 @@ gates. Existing gate.sh/gate.ps1 and CI remain unchanged.
 
 Timings describe this invocation only. They are evidence for future comparisons,
 not proof that development or application performance has improved.
+
+## Source provenance
+
+Reports record a SHA-256 fingerprint of Git-listed tracked and nonignored
+untracked files before and after the checks, together with the Git revision.
+Content, file names, executable bits, deleted entries, and symbolic-link target
+text contribute to the fingerprint. Changes during a run fail the source-stability
+step. Broken Git, submodules, special entries, reparse files, or inventory limits
+make this step explicitly skipped rather than claiming stable source.
+
+Limits: 100,000 entries, 16 MiB of path inventory, 128 MiB of content per
+fingerprint. Git listing is captured before these bounds are checked. Keep
+`--output` outside the source tree so generated evidence does not become a new
+untracked input. Ignored files, external path dependencies, link target contents,
+environment changes, and edits that are reverted between snapshots are not
+covered. This is provenance evidence, not a filesystem snapshot, cache key,
+reproducibility guarantee, or permission to skip rerunning tests. Doctor mode
+records the initial fingerprint but never claims a verified result.
