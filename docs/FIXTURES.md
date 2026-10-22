@@ -42,6 +42,8 @@ The comparison checks content and basic entry type, not timestamps, ACLs, altern
 data streams, hard-link identity, or physical allocation. Treat the manifest as
 local test evidence, not authenticated proof. The current tool does not seed
 registry keys, real installed apps, locked files, VSS state, or Windows recovery
-points. Windows native behavior remains unverified; portable tests ran on Linux.
+points. Windows standard-user fixture and toolkit checks now have
+[scoped native evidence](WINDOWS_VALIDATION.md); Windows symlink privilege,
+destructive application and recovery scenarios remain unverified.
 
 Run regression checks with `python -m unittest discover -s tests -v`.
