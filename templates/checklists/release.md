@@ -14,3 +14,5 @@
       dev toolchain — no missing-DLL surprises
 - [ ] GitHub release notes: what changed, verification status, known limits
 - [ ] Tag pushed; release marked latest only after the asset check passes
+
+- [ ] Record the exact milestone with the [release evidence v1 contract](../../docs/RELEASE_EVIDENCE.md); preserve failed/unrun checks and hardware gaps. Validate local published/downloaded asset bytes with the verifier. Review tag/source binding, notices and signature status separately.

@@ -120,3 +120,7 @@ The shared-crate option uses Python’s standard-library TOML reader.
 ## DLL consumer collection
 
 Use the [13-project consumer index](docs/DLL_COLLECTION.md) and [machine-readable contracts/provenance](docs/DLL_COLLECTION.json) to distinguish source, native evidence, external engines/models and validated downloads. FastSearch is the first packaged Windows x64 pilot; WinCommon is a Rust helper, not a callable DLL.
+
+## Portfolio navigation and evidence
+
+See the [project families](docs/PROJECT_FAMILIES.md), [fork identities](docs/FORK_PROVENANCE.md), and [release evidence contract/verifier](docs/RELEASE_EVIDENCE.md). FastSearch is the first consumer; other repositories retain their own validation gates until deliberate adoption.
