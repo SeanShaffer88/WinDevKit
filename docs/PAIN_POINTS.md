@@ -26,3 +26,5 @@ Sean's projects (Oct 2026), not hypothetical best practice.
 | 18 | Repeated manual verification commands, lost results between sessions, broken copied Git worktree pointer | InstallScope continuation, 2026-10-21 | tools/verify.py (checkpointed evidence; no cached passes) |
 
 | 19 | Cleanup and recovery behavior needs repeatable disposable test data; size-only checks miss same-size changes | InstallScope cleanup/report and storage batches | `tools/fixtures.py` (synthetic trees, SHA-256 inventory, exact-change assertions) |
+
+| 20 | DLL source, engine requirements and expiring CI artifacts had no unified consumer index | Portfolio audit priorities 8–9, 2026-10-22 | `docs/DLL_COLLECTION.md` + exact-commit JSON; FastSearch C/Python prerelease pilot |
