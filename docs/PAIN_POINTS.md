@@ -24,3 +24,5 @@ Sean's projects (Oct 2026), not hypothetical best practice.
 | 17 | REA process-ownership failure returned a large partial inventory that could be mistaken for completed source analysis | Ueli/Cerebro analysis in this session | `rea-summary.py`, explicit partial status and evidence/limitation preservation |
 
 | 18 | Repeated manual verification commands, lost results between sessions, broken copied Git worktree pointer | InstallScope continuation, 2026-10-21 | tools/verify.py (checkpointed evidence; no cached passes) |
+
+| 19 | Cleanup and recovery behavior needs repeatable disposable test data; size-only checks miss same-size changes | InstallScope cleanup/report and storage batches | `tools/fixtures.py` (synthetic trees, SHA-256 inventory, exact-change assertions) |
