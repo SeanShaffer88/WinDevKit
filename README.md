@@ -8,6 +8,8 @@ actually happened (see [`docs/PAIN_POINTS.md`](docs/PAIN_POINTS.md)).
 ## What's here (v0.1)
 
 **Tools**
+- `tools/fixtures.py` — create disposable filesystem test data and verify exact
+  removals or restoration using SHA-256 manifests. See [usage and limits](docs/FIXTURES.md).
 - `tools/gate.sh` / `tools/gate.ps1` — the full local quality gate:
   fmt, clippy on **both** host and `x86_64-pc-windows-msvc` targets,
   the **full** test suite, windows check on all targets. Every step is
