@@ -17,3 +17,8 @@ Sean's projects (Oct 2026), not hypothetical best practice.
 | 10 | Manifest/DPI/long-path setup redone (or forgotten) per app | multiple | `templates/app-manifests/` |
 | 11 | Release steps re-derived per project | all | `templates/checklists/release.md` |
 | 12 | Starting each new DLL from a blank cargo project | DLL collection #1 took a full session to scaffold | `tools/scaffold-dll.py` + `templates/dll-skeleton/` |
+| 13 | Default gate printed GREEN while missing Windows checks; workspace/lockfile coverage not enforced | Found while validating FastSearch in this session | strict full gate, explicit partial quick mode, behavioral shell tests |
+| 14 | Publisher ignored SHA-related error text and treated unavailable read-back verification as deferred success | `tools/publish.py` review in this session | nonzero/structured-error handling, failed verification is nonzero, mocked write/read-back tests |
+| 15 | New FFI skeleton combined catch_unwind claims with panic=abort and did not supply a panic guard | FastSearch release-profile and scaffold review | unwind-enabled template and real debug/release scaffold tests |
+| 16 | Shared helpers existed but no new-project path actually consumed them; copied implementations multiplied | WinCommon status and scaffold review | opt-in reviewed WinCommon vendoring with source file hashes |
+| 17 | REA process-ownership failure returned a large partial inventory that could be mistaken for completed source analysis | Ueli/Cerebro analysis in this session | `rea-summary.py`, explicit partial status and evidence/limitation preservation |

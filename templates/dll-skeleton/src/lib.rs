@@ -10,7 +10,7 @@ pub const VERSION_MINOR: u32 = 1;
 pub const VERSION_PATCH: u32 = 0;
 
 // Error codes (mirror include/{{HEADER}}).
-pub const WR_OK: i32 = 0;
+pub const {{PREFIX_UPPER}}_OK: i32 = 0;
 pub const ERR_INVALID_ARG: i32 = 1;
 pub const ERR_NOT_SUPPORTED: i32 = 2;
 pub const ERR_NOT_FOUND: i32 = 3;

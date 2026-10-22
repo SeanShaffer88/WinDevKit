@@ -1,0 +1,30 @@
+{
+  "status": "partial",
+  "code": "capability_unavailable",
+  "reason": "Linux process ownership inspection requires a procps-compatible ps on REA's PATH before launching a child: Command failed: ps -axo pid=,ppid=,pgid=,uid=,stat=,command=\nfatal library error, lookup self\n",
+  "evidence_id": "ev_83551ba7f8aabb5e36f2e3d3c942866841fd74b6123f676e30f9d070edf6a36b",
+  "subject_digest": {
+    "sha256": "9889a2cef2ece6ed578aaa3e58e51bcfbe3332108729c7d63874b6a81dff7a20"
+  },
+  "operation": "analyze_javascript_application",
+  "confidence": "derived",
+  "source_selection": {
+    "requested_paths": [
+      "src/common/Core/Search/fuzzySortFilter.ts",
+      "src/common/Core/Search/fuseJsSearchFilter.ts"
+    ],
+    "unselected_files": 982
+  },
+  "limitations": [
+    "Caller-selected source analysis leaves 982 inventoried files outside analysis scope. Inventory identity covers the complete artifact; relationships through unselected sources remain unknown.",
+    "CommonJS and ESM binding relationships were recovered from inert syntax and resolved only within the inventoried artifact container.",
+    "Graph coverage is incomplete; unavailable facts remain explicit and must not be read as absence.",
+    "JavaScript and HTML were parsed as inert text; bundle bootstrap code was never executed.",
+    "Source analysis was interrupted: Provider process-ownership cannot execute prepare_owned_process: Linux process ownership inspection requires a procps-compatible ps on REA's PATH before launching a child: Command failed: ps -axo pid=,ppid=,pgid=,uid=,stat=,command=\nfatal library error, lookup self\n",
+    "Static imports, entrypoints, workers, endpoints, and storage relationships do not prove runtime execution.",
+    "Static paths and relationships may remain unresolved when expressions are dynamic or obfuscated.",
+    "Webpack/Rspack factories were recovered from AST literals; REA did not invoke push handlers or bundle bootstrap code.",
+    "src/common/Core/Search/fuzzySortFilter.ts: Provider process-ownership cannot execute prepare_owned_process: Linux process ownership inspection requires a procps-compatible ps on REA's PATH before launching a child: Command failed: ps -axo pid=,ppid=,pgid=,uid=,stat=,command=\nfatal library error, lookup self\n"
+  ],
+  "interpretation": "Static evidence does not establish runtime behavior; review selection and limitations before drawing feature conclusions."
+}
