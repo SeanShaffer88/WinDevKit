@@ -2,8 +2,9 @@
 //! Conventions (house standard, from WinRecovery):
 //! - `*mut c_char` results are caller-owned; free with `{{PREFIX}}_free_string`.
 //! - Failures return null / an ERR_* code + a thread-local last-error message.
-//! - Nothing unwinds across the FFI boundary (catch_unwind everywhere;
-//!   release profile also sets panic = "abort").
+//! - Wrap fallible operation bodies in guard before returning to C.
+//!   The release profile enables unwind so guard can catch Rust panics.
+//!   Allocation failure and invalid caller pointers are not recoverable.
 
 use std::cell::RefCell;
 use std::ffi::CString;
@@ -21,6 +22,15 @@ pub fn set_error(code: i32, msg: &str) {
             CString::new(msg).unwrap_or_else(|_| CString::new("error").unwrap()),
         );
     });
+}
+
+/// Catch Rust panics before a fallible operation returns to its C caller.
+/// Callers map Err to the export's documented null / error-code sentinel.
+pub fn guard<T>(f: impl FnOnce() -> T) -> Result<T, i32> {
+    std::panic::catch_unwind(std::panic::AssertUnwindSafe(f)).map_err(|_| {
+        set_error(crate::ERR_INTERNAL, "internal panic caught at FFI boundary");
+        crate::ERR_INTERNAL
+    })
 }
 
 #[no_mangle]
@@ -48,5 +58,16 @@ pub extern "C" fn {{PREFIX}}_free_string(p: *mut c_char) {
         unsafe {
             drop(CString::from_raw(p));
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn panic_is_reported_without_unwinding_to_caller() {
+        assert_eq!(guard(|| panic!("fixture")), Err(crate::ERR_INTERNAL));
+        assert_eq!({{PREFIX}}_last_error_code(), crate::ERR_INTERNAL);
+        assert_eq!(guard(|| 42), Ok(42));
     }
 }

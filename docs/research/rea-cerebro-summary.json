@@ -1,0 +1,28 @@
+{
+  "status": "partial",
+  "code": "capability_unavailable",
+  "reason": "Linux process ownership inspection requires a procps-compatible ps on REA's PATH before launching a child: Command failed: ps -axo pid=,ppid=,pgid=,uid=,stat=,command=\nfatal library error, lookup self\n",
+  "evidence_id": "ev_766091f1ea43c93cf9a8fcd48dae9eb289c06ccdbb7b79f3231391a048945dba",
+  "subject_digest": {
+    "sha256": "b290410e9ce4159c7190eced15c5620182e2b2f3e3b9688afea21c60817026f4"
+  },
+  "operation": "analyze_javascript_application",
+  "confidence": "derived",
+  "source_selection": {
+    "requested_paths": [
+      "app/main/actions/search.js"
+    ],
+    "unselected_files": 91
+  },
+  "limitations": [
+    "Caller-selected source analysis leaves 91 inventoried files outside analysis scope. Inventory identity covers the complete artifact; relationships through unselected sources remain unknown.",
+    "CommonJS and ESM binding relationships were recovered from inert syntax and resolved only within the inventoried artifact container.",
+    "Graph coverage is incomplete; unavailable facts remain explicit and must not be read as absence.",
+    "JavaScript and HTML were parsed as inert text; bundle bootstrap code was never executed.",
+    "Static imports, entrypoints, workers, endpoints, and storage relationships do not prove runtime execution.",
+    "Static paths and relationships may remain unresolved when expressions are dynamic or obfuscated.",
+    "Webpack/Rspack factories were recovered from AST literals; REA did not invoke push handlers or bundle bootstrap code.",
+    "app/main/actions/search.js: Provider process-ownership cannot execute prepare_owned_process: Linux process ownership inspection requires a procps-compatible ps on REA's PATH before launching a child: Command failed: ps -axo pid=,ppid=,pgid=,uid=,stat=,command=\nfatal library error, lookup self\n"
+  ],
+  "interpretation": "Static evidence does not establish runtime behavior; review selection and limitations before drawing feature conclusions."
+}
