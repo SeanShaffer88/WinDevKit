@@ -116,3 +116,7 @@ that executable is installed. No live run of the legacy publisher is claimed.
 
 Developer tooling requires Python 3.11+ and a Rust toolchain with rustfmt/clippy.
 The shared-crate option uses Python’s standard-library TOML reader.
+
+## DLL consumer collection
+
+Use the [13-project consumer index](docs/DLL_COLLECTION.md) and [machine-readable contracts/provenance](docs/DLL_COLLECTION.json) to distinguish source, native evidence, external engines/models and validated downloads. FastSearch is the first packaged Windows x64 pilot; WinCommon is a Rust helper, not a callable DLL.
