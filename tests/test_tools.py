@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import shutil
 from unittest.mock import patch
 
 KIT = Path(__file__).resolve().parents[1]
@@ -17,14 +18,23 @@ spec.loader.exec_module(publisher)
 
 class GateTests(unittest.TestCase):
     def gate(self, args=(), target=True, failure='', rustup_fail=False):
+        bash = shutil.which('bash')
+        if os.name == 'nt':
+            git = shutil.which('git')
+            candidate = Path(git).resolve().parents[1] / 'bin/bash.exe' if git else None
+            if not candidate or not candidate.is_file():
+                self.skipTest('POSIX gate requires Git Bash on Windows; WSL launcher is not a shell')
+            bash = str(candidate)
+        if not bash:
+            self.skipTest('POSIX gate requires Bash')
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root / 'cargo').write_text('#!/bin/sh\nprintf "%s\\n" "$*" >> "$CALLS"\ncase "$*" in *"$FAIL_STEP"*) if [ -n "$FAIL_STEP" ]; then exit 17; fi;; esac\n')
             (root / 'rustup').write_text('#!/bin/sh\n' + ('exit 3\n' if rustup_fail else ('echo x86_64-pc-windows-msvc\n' if target else 'echo x86_64-unknown-linux-gnu\n')))
             for file in [root / 'cargo', root / 'rustup']:
                 file.chmod(0o755)
-            env = dict(os.environ, PATH=tmp + os.pathsep + os.environ['PATH'], CALLS=str(root / 'calls'), FAIL_STEP=failure)
-            result = subprocess.run(['bash', str(KIT / 'tools/gate.sh'), *args], env=env, text=True, capture_output=True)
+            env = dict(os.environ, PATH=tmp + os.pathsep + os.environ['PATH'], CALLS=(root / 'calls').as_posix(), FAIL_STEP=failure)
+            result = subprocess.run([bash, (KIT / 'tools/gate.sh').as_posix(), *args], env=env, text=True, capture_output=True)
             calls = (root / 'calls').read_text() if (root / 'calls').exists() else ''
             return result, calls
 
