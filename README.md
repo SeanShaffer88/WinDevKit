@@ -116,7 +116,10 @@ ship gate),
 **screenshot harness** ✅ COVERED 2026-10-24 by CaptureKit
 (SeanShaffer88/CaptureKit — CAPTURE.md spec → capture walk script →
 README wire/verify; a duplicate harness was deliberately not built),
-**NetKit** (hardened HTTP client), **ShellKit** (context
+**NetKit** ✅ SHIPPED 2026-10-24
+(SeanShaffer88/NetKit, CI green — hardened HTTP client: policy-checked
+redirects/retries, size caps, digest-verified downloads, no cert
+bypass), **ShellKit** (context
 menus, associations, jump lists), **NotifyKit** (toasts),
 **MediaKit** (media probing + thumbnails), **SignKit** (Authenticode
 sign/verify; signing half waits on a certificate decision).
