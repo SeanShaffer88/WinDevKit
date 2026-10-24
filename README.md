@@ -104,8 +104,10 @@ CI green — one structured logging format), **GoldenKit** ✅ SHIPPED 2026-10-2
 captured output, timeouts, Job Object tree kill, elevation rules), **JobKit** ✅ SHIPPED 2026-10-24
 (SeanShaffer88/JobKit, CI green — background-work engine: progress %,
 ETA, pause/resume, cooperative cancellation),
-**AppHost** (app skeleton pre-wiring SettingsKit + LogKit + UpdateKit
-+ CrashKit).
+**AppHost** ✅ SHIPPED 2026-10-24
+(SeanShaffer88/AppHost, CI green — app skeleton + generator pre-wiring
+SettingsKit + LogKit + UpdateKit + CrashKit + ProcessKit + JobKit;
+tray handled in the window procedure, single-instance by named mutex).
 
 Phase B — capability: **ReleaseKit** (one-command releases),
 **screenshot harness** (walks a CAPTURE.md list into README-ready
