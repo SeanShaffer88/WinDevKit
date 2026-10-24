@@ -101,7 +101,9 @@ migrations), **LogKit** ✅ SHIPPED 2026-10-23 (SeanShaffer88/LogKit,
 CI green — one structured logging format), **GoldenKit** ✅ SHIPPED 2026-10-24
 (SeanShaffer88/GoldenKit, CI green — golden-file test crate + bless tool), **ProcessKit** ✅ SHIPPED 2026-10-24
 (SeanShaffer88/ProcessKit, CI green — child-process supervision:
-captured output, timeouts, Job Object tree kill, elevation rules), **JobKit** (progress/ETA/cancellation engine),
+captured output, timeouts, Job Object tree kill, elevation rules), **JobKit** ✅ SHIPPED 2026-10-24
+(SeanShaffer88/JobKit, CI green — background-work engine: progress %,
+ETA, pause/resume, cooperative cancellation),
 **AppHost** (app skeleton pre-wiring SettingsKit + LogKit + UpdateKit
 + CrashKit).
 
