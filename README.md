@@ -109,7 +109,10 @@ ETA, pause/resume, cooperative cancellation),
 SettingsKit + LogKit + UpdateKit + CrashKit + ProcessKit + JobKit;
 tray handled in the window procedure, single-instance by named mutex).
 
-Phase B — capability: **ReleaseKit** (one-command releases),
+Phase B — capability: **ReleaseKit** ✅ SHIPPED 2026-10-24
+(SeanShaffer88/ReleaseKit, CI green — plan / prepare / verify for
+one-command releases; verify re-measures the live release and is the
+ship gate),
 **screenshot harness** (walks a CAPTURE.md list into README-ready
 images), **NetKit** (hardened HTTP client), **ShellKit** (context
 menus, associations, jump lists), **NotifyKit** (toasts),
