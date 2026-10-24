@@ -64,7 +64,8 @@ house pattern (Rust, C ABI, gate + CI proof, MIT).
 
 Phase A — foundation: **SettingsKit** ✅ SHIPPED 2026-10-23
 (SeanShaffer88/SettingsKit, CI green — versioned settings with
-migrations), **LogKit** (one structured logging format), **GoldenKit**
+migrations), **LogKit** ✅ SHIPPED 2026-10-23 (SeanShaffer88/LogKit,
+CI green — one structured logging format), **GoldenKit**
 (golden-file test crate + bless tool), **ProcessKit** (child-process
 supervision), **JobKit** (progress/ETA/cancellation engine),
 **AppHost** (app skeleton pre-wiring SettingsKit + LogKit + UpdateKit
