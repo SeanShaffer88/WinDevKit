@@ -33,6 +33,37 @@ actually happened (see [`docs/PAIN_POINTS.md`](docs/PAIN_POINTS.md)).
 - `templates/a11y/explain-pattern.md` — the tooltip/accessible-name
   pattern distilled from InstallScope's P0-1 work.
 
+## AI-assist suite (shipped 2026-10-24)
+
+Seven standalone tools (Python 3, standard library only, MIT) built from
+the pain points in `docs/PAIN_POINTS.md` (#26–#32) — each exists to make
+an AI development agent faster and less error-prone across this whole
+project family:
+
+- [PublishPilot](https://github.com/SeanShaffer88/PublishPilot) —
+  publish preflight (size/base64/CRLF/execute-bit/workflow guards),
+  manifest, and hash read-back verification.
+- [RepoRadar](https://github.com/SeanShaffer88/RepoRadar) — cross-repo
+  status snapshot plus SyncGuard, the pre-publish check that local HEAD
+  matches live remote HEAD.
+- [FieldVerify](https://github.com/SeanShaffer88/FieldVerify) —
+  on-machine verification checklists run in one sitting, with an
+  evidence bundle (results, report, logs) per run.
+- [ContextPack](https://github.com/SeanShaffer88/ContextPack) — one
+  compact, AI-ready brief per repo: stack, pinned versions, license read
+  from the file itself, gate commands, docs.
+- [CaptureKit](https://github.com/SeanShaffer88/CaptureKit) — CAPTURE.md
+  screenshot specs: plan, generate the Windows capture script, wire
+  captures into READMEs, verify none are missing.
+- [ForAISearch](https://github.com/SeanShaffer88/ForAISearch) — local
+  SQLite FTS5 search over the ForAI resource catalog
+  (resources.json / resources.csv).
+- [GateRunner](https://github.com/SeanShaffer88/GateRunner) — one
+  gate.toml runs any stack's quality gate in order, with progress %,
+  ETA, and warnings for known-dangerous gate patterns.
+
+All seven are v0.1.0 (Latest) with CI green.
+
 ## Roadmap (proposed, in leverage order)
 
 1. **`win-common` shared Rust crate** — wide strings, registry reader,
@@ -53,7 +84,9 @@ actually happened (see [`docs/PAIN_POINTS.md`](docs/PAIN_POINTS.md)).
    SBOM generation, signing checklist.
 6. **Project catalog page** — one living index of all repos: CI status,
    verification status, next step. (Today that knowledge lives in memory
-   files and chat threads.)
+   files and chat threads.) The status/CI half of this is now covered by
+   **RepoRadar** (see the AI-assist suite above); verification status
+   and next steps remain open.
 
 ## Expansion (approved 2026-10-21, in build order)
 
