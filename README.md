@@ -113,8 +113,10 @@ Phase B — capability: **ReleaseKit** ✅ SHIPPED 2026-10-24
 (SeanShaffer88/ReleaseKit, CI green — plan / prepare / verify for
 one-command releases; verify re-measures the live release and is the
 ship gate),
-**screenshot harness** (walks a CAPTURE.md list into README-ready
-images), **NetKit** (hardened HTTP client), **ShellKit** (context
+**screenshot harness** ✅ COVERED 2026-10-24 by CaptureKit
+(SeanShaffer88/CaptureKit — CAPTURE.md spec → capture walk script →
+README wire/verify; a duplicate harness was deliberately not built),
+**NetKit** (hardened HTTP client), **ShellKit** (context
 menus, associations, jump lists), **NotifyKit** (toasts),
 **MediaKit** (media probing + thumbnails), **SignKit** (Authenticode
 sign/verify; signing half waits on a certificate decision).
