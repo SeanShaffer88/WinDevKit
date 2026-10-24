@@ -17,16 +17,16 @@ Sean's projects (Oct 2026), not hypothetical best practice.
 | 10 | Manifest/DPI/long-path setup redone (or forgotten) per app | multiple | `templates/app-manifests/` |
 | 11 | Release steps re-derived per project | all | `templates/checklists/release.md` |
 | 12 | Starting each new DLL from a blank cargo project | DLL collection #1 took a full session to scaffold | `tools/scaffold-dll.py` + `templates/dll-skeleton/` |
-| 13 | Default gate printed GREEN while missing Windows checks; workspace/lockfile coverage not enforced | Found while validating FastSearch in this session | strict full gate, explicit partial quick mode, behavioral shell tests |
-| 14 | Publisher ignored SHA-related error text and treated unavailable read-back verification as deferred success | `tools/publish.py` review in this session | nonzero/structured-error handling, failed verification is nonzero, mocked write/read-back tests |
-| 15 | New FFI skeleton combined catch_unwind claims with panic=abort and did not supply a panic guard | FastSearch release-profile and scaffold review | unwind-enabled template and real debug/release scaffold tests |
-| 16 | Shared helpers existed but no new-project path actually consumed them; copied implementations multiplied | WinCommon status and scaffold review | opt-in reviewed WinCommon vendoring with source file hashes |
-| 17 | REA process-ownership failure returned a large partial inventory that could be mistaken for completed source analysis | Ueli/Cerebro analysis in this session | `rea-summary.py`, explicit partial status and evidence/limitation preservation |
-
-| 18 | Repeated manual verification commands, lost results between sessions, broken copied Git worktree pointer | InstallScope continuation, 2026-10-21 | tools/verify.py (checkpointed evidence; no cached passes) |
-
-| 19 | Cleanup and recovery behavior needs repeatable disposable test data; size-only checks miss same-size changes | InstallScope cleanup/report and storage batches | `tools/fixtures.py` (synthetic trees, SHA-256 inventory, exact-change assertions) |
-
-| 20 | DLL source, engine requirements and expiring CI artifacts had no unified consumer index | Portfolio audit priorities 8–9, 2026-10-22 | `docs/DLL_COLLECTION.md` + exact-commit JSON; FastSearch C/Python prerelease pilot |
-
-| 21 | Release/build/runtime evidence and fork ownership had to be reconstructed across separate portfolio reports | GitHub audit priorities 10–12, FastSearch release pilot and recovery validation, 2026-10-22 | schemas/release-evidence-v1.schema.json, tools/release-evidence.py, docs/RELEASE_EVIDENCE.md and family/provenance indexes |
+| 13 | Settings load/save hand-rolled per app; a default flip silently breaks golden files; no schema versioning or migrations anywhere | InstallScope PR #11 (golden failure), every app's settings code | **SettingsKit** (DLL, expansion #1) — ✅ SHIPPED 2026-10-23, SeanShaffer88/SettingsKit, CI green |
+| 14 | Logging reinvented per app in incompatible formats; a milestone log had to be bolted on after a launch-failure hunt | ytTrayDL `yttraydl.log`, CrucibleKit `cruciblekit.log`, InstallScope logs | **LogKit** (DLL, expansion #2) |
+| 15 | Golden-file testing re-derived per project, fixtures managed by hand | InstallScope settings/job goldens | **GoldenKit** (crate + bless tool, expansion #3) |
+| 16 | Child-process supervision redone per app; orphaned/hung children handled ad hoc | yt-dlp + ffmpeg (ytTrayDL), NSIS + PortableApps launcher (InstallScope) | **ProcessKit** (DLL, expansion #4) |
+| 17 | Progress % + ETA demanded by the master prompt but implemented per job, per app | InstallScope jobs, MuseDesktop downloads | **JobKit** (DLL, expansion #5) |
+| 18 | App plumbing (single-instance, tray, settings, logging, updates, crash capture) rebuilt for every new tool | MuseDesktop and ytTrayDL both hand-wired all of it | **AppHost** (app skeleton, expansion #6) |
+| 19 | Release machinery rebuilt per project; checklists exist (pain #11) but execution is manual every time | InstallScope release.yml + SHA256SUMS, XToolbox and ytTrayDL releases | **ReleaseKit** (tool, expansion #7) |
+| 20 | README screenshot capture lists prepared but captures wait on manual sessions, project after project | ytTrayDL `docs/screenshots/CAPTURE.md`, SafeReturn S6 capture list | **Screenshot harness** (tool, expansion #8) |
+| 21 | HTTP transport hand-rolled per consumer, starting with a from-scratch WinHTTP layer | UpdateKit `uk_download` | **NetKit** (DLL, expansion #9) |
+| 22 | Shell integration done as raw registry edits; a rename had to chase verbs, associations, and uninstall keys by hand | Expunge→InstallScope rename | **ShellKit** (DLL, expansion #10) |
+| 23 | No house way to raise a notification; approval alerts needed a whole separate userscript project | muse-allow-alerter | **NotifyKit** (DLL, expansion #11) |
+| 24 | Media files probed by shelling out to external tools just to learn duration/codecs/streams | ReelDeck pipeline | **MediaKit** (DLL, expansion #12) |
+| 25 | Every release ships unsigned; no signing or signature-verification helper exists | InstallScope v0.1.0, MuseDesktop v0.1.0, ytTrayDL installer | **SignKit** (DLL, expansion #13) |
