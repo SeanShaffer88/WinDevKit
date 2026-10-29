@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-33 small Windows DLLs that each do one common job — watching folders, making
+41 small Windows DLLs that each do one common job — watching folders, making
 thumbnails, showing notifications, handling settings — so programs do not have
 to reinvent them. Every kit is free (MIT), has no dependencies, and ships as a
 ready-to-use download: the DLL, a C header, and an import library. Any
@@ -10,7 +10,7 @@ programming language that can call C functions can use them.
 
 ## How every kit works
 
-All 33 kits share one pattern:
+All 41 kits share one pattern:
 
 - Plain C interface (a header file is included), so C, C++, C#, Rust, Python,
   PowerShell and anything else with a C-calling feature can use them.
@@ -81,6 +81,19 @@ Windows may show a SmartScreen prompt on first use.
 | CrashKit | Captures a minidump and a JSON sidecar when a program crashes | v0.1.0 | [DLL zip](https://github.com/SeanShaffer88/CrashKit/releases/download/v0.1.0/CrashKit-v0.1.0-x64.zip) · [Repo](https://github.com/SeanShaffer88/CrashKit) |
 | TimeKit | Time zones and date handling done once, correctly (497 canonical zones) | v0.1.0 | [DLL zip](https://github.com/SeanShaffer88/TimeKit/releases/download/v0.1.0/TimeKit-v0.1.0-x64.zip) · [Repo](https://github.com/SeanShaffer88/TimeKit) |
 | NotifyKit | Tells the user something: a notification queue plus tray balloons and real WinRT toasts (v0.2) | v0.2.0 | [DLL zip](https://github.com/SeanShaffer88/NotifyKit/releases/download/v0.2.0/NotifyKit-v0.2.0-x64.zip) · [Repo](https://github.com/SeanShaffer88/NotifyKit) |
+| RegKit | Windows registry read, list, write and delete, with undo manifests that can reverse every change | v0.1.0 | [DLL zip](https://github.com/SeanShaffer88/RegKit/releases/download/v0.1.0/RegKit-v0.1.0-x64.zip) · [Repo](https://github.com/SeanShaffer88/RegKit) |
+| LinkKit | Creates and reads Windows shortcut (.lnk) files and stamps AppUserModelIDs on them | v0.1.0 | [DLL zip](https://github.com/SeanShaffer88/LinkKit/releases/download/v0.1.0/LinkKit-v0.1.0-x64.zip) · [Repo](https://github.com/SeanShaffer88/LinkKit) |
+| ClipKit | Clipboard text and file-list access, plus change detection | v0.1.0 | [DLL zip](https://github.com/SeanShaffer88/ClipKit/releases/download/v0.1.0/ClipKit-v0.1.0-x64.zip) · [Repo](https://github.com/SeanShaffer88/ClipKit) |
+| InstanceKit | Single-instance mutex with named-pipe argument forwarding to the running instance | v0.1.0 | [DLL zip](https://github.com/SeanShaffer88/InstanceKit/releases/download/v0.1.0/InstanceKit-v0.1.0-x64.zip) · [Repo](https://github.com/SeanShaffer88/InstanceKit) |
+
+## For builders and testers
+
+| Kit | What it does | Version | Download |
+|---|---|---|---|
+| BridgeKit | Generates verified C# and Rust bindings from the collection's C headers, and verifies a built DLL's exports against its header (command-line tool) | v0.1.0 | [Tool zip](https://github.com/SeanShaffer88/BridgeKit/releases/download/v0.1.0/BridgeKit-v0.1.0-x64.zip) · [Repo](https://github.com/SeanShaffer88/BridgeKit) |
+| DiagKit | One-call diagnostics bundles: logs, dumps, version info, and file hashes in a single zip with a SHA-256 manifest | v0.1.0 | [DLL zip](https://github.com/SeanShaffer88/DiagKit/releases/download/v0.1.0/DiagKit-v0.1.0-x64.zip) · [Repo](https://github.com/SeanShaffer88/DiagKit) |
+| FixtureKit | Deterministic test fixtures: PNG, WAV, text, ZIP, and TAR files with exact bytes, including corrupt variants | v0.1.0 | [DLL zip](https://github.com/SeanShaffer88/FixtureKit/releases/download/v0.1.0/FixtureKit-v0.1.0-x64.zip) · [Repo](https://github.com/SeanShaffer88/FixtureKit) |
+| UiProbeKit | UI Automation inspection and actions: window and control trees, invoke, toggle, set value, and focus | v0.1.0 | [DLL zip](https://github.com/SeanShaffer88/UiProbeKit/releases/download/v0.1.0/UiProbeKit-v0.1.0-x64.zip) · [Repo](https://github.com/SeanShaffer88/UiProbeKit) |
 
 ## License
 
