@@ -33,9 +33,9 @@ actually happened (see [`docs/PAIN_POINTS.md`](docs/PAIN_POINTS.md)).
 - `templates/a11y/explain-pattern.md` — the tooltip/accessible-name
   pattern distilled from InstallScope's P0-1 work.
 
-## The Windows DLL Collection (33 kits)
+## The Windows DLL Collection (41 kits)
 
-33 small, zero-dependency DLLs that each do one common Windows job —
+41 small, zero-dependency DLLs that each do one common Windows job —
 folder watching, thumbnails, notifications, settings, archives, OCR,
 speech-to-text and more — behind one shared C interface with JSON in and
 out, each with a ready-to-use download. Browse the full list in
