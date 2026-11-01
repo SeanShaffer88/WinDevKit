@@ -1,0 +1,223 @@
+# Input and extraction review
+
+This file records what the library refuses, why, and what is still not
+proven. Sections are dated; later sections describe later builds.
+
+## October 21–22, 2026 (v0.1 hardening)
+
+The C ABI is unchanged. New conservative refusals apply: 256 MiB encoded archive input, 64 MiB per expanded entry, 512 MiB total declared output and 10,000 entries. DEFLATE checks the budget before literal, stored-block and back-reference growth; ZIP uses the declared entry size as a tighter budget. TAR checks output size, padded offsets and input truncation before advancing.
+
+Extraction creates new files exclusively and never overwrites existing files. Destination ancestors are checked with link-aware metadata; detected symlinks and Windows reparse points/junctions are refused. Common Windows device names, ADS colons, trailing-dot/space aliases and control characters are refused in archive names. Existing supported ZIP/TAR formats and upstream-independent codec implementations remain.
+
+Limits: these metadata checks do not close adversarial replacement races. Use a fresh, quiescent extraction folder without untrusted concurrent writers. Extraction is not transactional: earlier files/directories can remain after failure; a failed write can leave a partial file named in the error. There is no cancellation API. Do not advertise this as a sandbox or as guaranteed containment against a hostile local filesystem actor. The archive-creation APIs are separate from these extraction safeguards.
+
+Validation at that review, on Windows 11 Home build 26300 x64: 19 Debug and 19 Release tests (the suite has grown since); host and all-target Windows Clippy/check; Release DLL build. Tests exercised intra-block expansion boundaries, malformed bounded corpora, traversal/device/ADS names, overwrite refusal and a real standard-user junction pointing to another synthetic folder. The outside fixture remained unchanged. Python stdlib ZIP store/deflate input decoded through the compiled DLL; ZIP and TAR created by the DLL were independently read by Python. Existing zlib vectors and round-trip anchors remain intact.
+
+`tests/native_interop.py` is part of Windows CI. The deterministic malformed corpus is bounded regression coverage, not coverage-guided fuzzing, a sanitizer run or a complete security audit. Native ARM64 and hostile race/resource-exhaustion scenarios need separate evidence. Release panic strategy is unwind so the existing FFI panic guard works for unwinding panics; it cannot recover from invalid caller pointers or allocator/process aborts.
+
+## October 30, 2026 (v0.2)
+
+No ABI change: same functions, same error codes, same header.
+
+**New read paths, with their own bounds.** TAR now consumes GNU `L` long-name
+records and pax `x`/`X` extended headers instead of listing them as entries.
+A metadata record is capped at 64 KiB; GNU base-256 (binary) numeric fields
+are refused with `AK_ERR_NOT_SUPPORTED` rather than read as octal; pax records
+must declare a length that stays inside the record block and must be newline
+terminated, and `size`/`mtime` must parse, or the archive is `AK_ERR_CORRUPT`.
+A pax `size` override is used for both the reported entry size and the offset
+of the following header, so a placeholder header field cannot desynchronise the
+walk. Names from these records are subject to exactly the same extraction guard
+as before (`safe_join`), i.e. a long name is not a way around traversal checks.
+
+**ZIP64 is refused precisely.** The EOCD entry-count/offset/size overflow
+markers, and per-entry `0xFFFFFFFF` size or offset markers, now produce
+`AK_ERR_NOT_SUPPORTED` naming ZIP64. Previously such archives could be
+mis-parsed as corrupt or partially listed. ZIP64 *extra fields* whose central
+directory still carries classic sizes (what streaming writers emit) remain
+readable, because sizes are taken from the central directory.
+
+**Hardlinks become copies, never links.** GNU tar stores a second name for
+identical bytes as a hardlink (`type 1`), which is how backups avoid duplicating
+data; those entries used to be skipped, so the extracted tree was missing files
+that the archive described. Extraction now copies the target's bytes when the
+target is a file it has already written in the same call. The link name is
+archive data and goes through `safe_join` like any other: `../../etc/passwd`
+resolves to nothing and is reported as skipped, not followed. A forward
+reference (link before its target) is also skipped rather than resolved against
+whatever happens to be on disk. Nothing in this path can create a link, so the
+escape surface is unchanged.
+
+**Create-side omissions are reported, never silent.** The folder walk skips
+symlinks (following one is how a "backup" ends up containing `/etc` or a
+user's SSH key) and unreadable directories, and both were previously dropped
+without a word, which made the resulting archive indistinguishable from a
+complete copy. They now appear in `ak_last_warning()` with the same wording
+extraction uses. The walk also refuses to dereference anything: `file_type()`
+comes from the directory entry, so a link's target is never stat'ed.
+
+**Appending is held to the same rules as extracting.** `ak_zip_append`
+rebuilds the archive, so it is also the one place where an archive could be
+*build* with a name this library would refuse to extract. Names are therefore
+checked with `safe_join`, duplicates are refused (case-insensitively on
+Windows, where the filesystem would merge them), and an existing archive
+comment is carried over instead of being silently dropped. Because the rebuild
+reads every entry, an archive holding a method this library cannot decode
+(e.g. bzip2) cannot be appended to: it fails before anything is written.
+
+**TAR variants and non-archives.** v7 headers (no `ustar` magic) are accepted
+when the header checksum validates, which is the only evidence that format
+offers; a 512-byte block of zeros with a bogus checksum is still not a tar.
+GNU sparse members are typed `sparse` and skipped rather than written: their
+header describes only the bytes present, so extraction would create a file of
+the right name with wrong contents. `.tar.gz`/`.tar.bz2`/`.xz`/`.zst`/7z/RAR
+input is refused with the container named, because the library does not
+decompress wrappers and "unknown format" would hide that.
+
+**ZIP extra fields are read for two things, and only two.** Timestamps
+(`0x5455` Unix seconds, `0x000A` NTFS FILETIME) and the Unicode path name
+(`0x7075`). The DOS time field has 2-second resolution and cannot express dates
+outside 1980-2107, so ignoring the extras meant reporting the wrong second for
+every Info-ZIP file and 1980 for anything older; `0x7075` matters because some
+writers (Java's zipfs, some 7-Zip settings) put the real name there and a
+legacy code page in the name field, which decoded as mojibake. The `0x7075`
+name is accepted only when its CRC matches the raw name, is refused when empty
+or containing NUL, and remains untrusted input: `safe_join` still decides the
+path. Every other extra tag is skipped, as before - extras are a hint box, not
+a contract, and a truncated record inside one ends the walk rather than
+becoming an error on an otherwise readable entry.
+
+**Archives with a prepended stub are read, not refused.** Self-extractors and
+installers put their own bytes in front of a normal ZIP, which leaves every
+recorded offset short by the stub's size; those archives used to fail with
+"bad central directory signature". The central directory always ends exactly
+where the EOCD begins, which pins its real position. The shift is accepted only
+when the signature really is there and the same shift applies to every local
+header, so a genuinely broken offset still fails.
+
+**Create paths now enforce the read budgets.** Entry count, per-file size and
+total size are checked while walking the folder, and the ZIP writer refuses
+more than 65,535 entries or a 4 GiB layout instead of writing a wrapped 16-bit
+count or 32-bit offset. This closes a silent-corruption hole rather than a
+security hole: the old writer produced an archive that described the wrong
+number of entries. Symlinks are still never followed; unreadable
+subdirectories are still skipped silently, which is a deliberate trade for
+backup use and is called out here.
+
+**Extraction changes.** The archive is parsed once per call instead of once
+per entry (v0.1 re-parsed the central directory for every file it extracted).
+A file that fails mid-write is removed instead of being left truncated, and
+the error says whether removal succeeded. The remaining non-transactional
+properties are unchanged: earlier entries stay on disk after a failure, and
+existing files are never overwritten.
+
+**What was verified for this change.** Locally on Linux x86_64, with rustc
+1.88.0: 29 unit tests and 4 integration tests, `cargo fmt --all -- --check`,
+`cargo clippy --all-targets -- -D warnings`, and the release cdylib. Interop
+was re-run against Info-ZIP `zip`/`unzip`, GNU `tar` (ustar, `gnu`, `pax`) and
+Python `zipfile`/`tarfile` in both directions, including long TAR names, a
+5-10 MB multi-block DEFLATE stream, ZIP64 refusal and traversal refusal. The
+dynamic-Huffman encoder was additionally checked against a line-by-line Python
+model whose streams were decoded by zlib: 300 structural fuzz cases, 4,000
+random frequency sets (no incomplete or over-long codes), and byte-exact
+anchors now asserted in the Rust test suite.
+
+**Name decoding and folder extraction (added to v0.2 before release).** ZIP
+names are now decoded as UTF-8 when the entry sets the UTF-8 flag or when the
+bytes are valid UTF-8, and as CP437 otherwise (APPNOTE 4.4.4). This cannot
+widen the extraction surface: ASCII bytes pass through unchanged and every
+CP437 high byte maps to a non-ASCII printable character (U+00A1 and above),
+so decoding cannot introduce a `/` or `\` separator, a drive colon, a control
+character or a device name. The traversal guard therefore still sees exactly
+the separator set it did before. `ak_extract_prefix` selects entries on
+component boundaries and strips the prefix; it traversal-checks only the
+entries it writes, so an unsafe entry elsewhere in the archive is skipped
+silently rather than aborting the call, while an unsafe entry *inside* the
+selection aborts with `AK_ERR_CORRUPT`. An unsafe prefix itself is
+`AK_ERR_INVALID_ARG`, not a silent no-op that reports zero files.
+
+**Link and special-file entries.** Extraction used to abort the moment it met a
+TAR entry that was not a regular file or directory, so any tarball containing a
+symlink — most Linux ones — failed entirely. Those entries are now skipped and
+counted in `ak_last_warning()`, and `ak_list_json` reports the kind
+(`symlink`, `hardlink`, `other`) so a caller can see what a listing contains
+before extracting. This is also the conservative choice for safety: a
+symlink-writing extractor is how many archive escapes happen, and skipping
+cannot create a link at all, so the traversal guard's job is unchanged and
+narrower in scope. The user-visible cost is that a "successful" extraction can
+be incomplete, which is why the warning is part of the contract rather than a
+debug aid: callers that care about completeness must read it. Asking for such
+an entry by name remains a hard `AK_ERR_NOT_SUPPORTED` error, and `ak_test`
+still verifies the archive as a whole.
+
+**Duplicate and colliding entries.** Extraction now records every file path it
+writes and refuses a second entry that resolves to the same path, reporting both
+entry names as `AK_ERR_CORRUPT`. Two consequences worth stating. First, this is
+the only way an archive can make extraction fail *after* files have already
+landed, so callers should still treat a failed extraction as partial. Second,
+the comparison folds case on Windows only, so an archive containing both
+`Case.txt` and `case.txt` extracts both files on Linux and aborts on Windows —
+the honest behaviour, since the target filesystem is what decides, but it does
+mean the same archive can succeed on one platform and fail on another.
+Duplicate directory records stay tolerated (creating a directory twice is
+idempotent). This check is by path, not by inode or by filesystem identity, so
+it does not detect two names that a case-insensitive filesystem would merge in
+subtler ways (Unicode normalisation, trailing dots); `safe_join` already refuses
+trailing-dot and trailing-space names for that reason.
+
+**Directory attribute.** A ZIP entry is treated as a directory when its name
+ends with `/` or when the DOS directory attribute `0x10` is set. The second
+half is new: archives from writers that omit the trailing slash used to extract
+a zero-byte file where a directory belonged.
+
+**GNU long-name output.** TAR creation no longer refuses names that cannot be
+prefix-split: it emits a GNU `L` record (a header named `././@LongLink`) whose
+data is the NUL-terminated name, followed by the entry's own header carrying a
+truncated placeholder. Three bounds apply. The record is capped at 64 KiB,
+exactly the limit the *reader* applies to metadata records, so this library can
+always reopen what it writes. The placeholder is truncated on a UTF-8 character
+boundary, so a reader that ignores the record still sees valid text rather than
+a mangled sequence. And a name is only ever routed to a long record when no
+ustar prefix split exists, so ordinary archives stay plain ustar and strict
+readers keep working. Verified against GNU tar (`-t`, `-x`), Python tarfile and
+this library's own reader on a 306-byte name. The pax and GNU metadata parsers
+now also have a bounded adversarial corpus (`tar_metadata_record_parsers_never_panic`)
+covering truncated records, unparseable sizes, zero lengths and random
+payloads; that is regression coverage, not a fuzzing campaign.
+
+**Timestamp restoration.** Extraction now calls `utimensat` (Unix) or
+`SetFileTime` (Windows) with the time each entry declared. The value is
+validated before use: the Windows path converts to 100 ns ticks in `i128` and
+refuses anything outside the FILETIME range instead of wrapping, and the Unix
+path passes the seconds through unchanged. A zero TAR time is treated as
+unknown and skipped; ZIP clamps pre-1980 times to the DOS epoch because the
+format cannot express them. Restoration runs after the file handle is closed
+(Windows refuses attribute writes on an open write handle) and failures are
+deliberately swallowed, because the content is already on disk and a
+read-only volume or a filesystem without timestamps must not turn a good
+extraction into an error. This adds one more attribute write per entry, so an
+entry name that resolves to a path the process may write but not re-attribute
+now produces a file with the wrong (current) time rather than an error.
+
+**Read-only attribute.** Create records whether a source file or directory is
+read-only, `ak_list_json` reports it, and extraction re-applies it. Two
+ordering rules keep it safe: a file is marked only after its content *and*
+timestamp are written, and a directory is marked only after every child
+exists, in reverse order, because a read-only directory can still be written
+into on Unix but Windows will refuse new children. On Unix the owner write bit
+is dropped from all three permission triads, so "read-only" means read-only
+for every account rather than just the owner. Failures are ignored like
+timestamp failures. The practical consequence worth knowing: extracting a
+read-only tree and then trying to modify or delete it inside the same process
+will fail until the attribute is cleared, exactly as it would for a real copy.
+A zero TAR mode is treated as "not recorded" and does not make an entry
+read-only.
+
+**What is still not proven.** No new Windows-native adversarial run was made
+for this change; Windows CI (fmt, clippy, test, release build, then
+`tests/native_interop.py` against the built DLL) is the native gate, and the
+v0.1 statements above are neither re-run nor retracted. The TAR pax/GNU
+metadata parsers have not been fuzzed, only exercised against real archives
+and hand-built malformed records. Long TAR names beyond the ustar prefix split
+still cannot be *written*. Extraction remains a best-effort tool for
+trustworthy local archives, not a containment boundary.
