@@ -98,6 +98,15 @@ fn cmake_build(src: &Path, build_dir: &Path, prefix: &Path, extra_defs: &[String
             "-DCMAKE_INSTALL_LIBDIR=lib".to_string(),
             // Static libs get linked into a cdylib — need PIC.
             "-DCMAKE_POSITION_INDEPENDENT_CODE=ON".to_string(),
+            // The engine must use the same static CRT as the Rust
+            // side (the kit's .cargo/config.toml sets +crt-static).
+            // CMake's default /MD leaves __imp_* dynamic-CRT
+            // references that a static-CRT link cannot resolve
+            // (LNK2019/LNK1120). CMP0091 must be NEW for the
+            // runtime-library setting to apply to projects whose
+            // cmake_minimum_required predates 3.15.
+            "-DCMAKE_POLICY_DEFAULT_CMP0091=NEW".to_string(),
+            "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded".to_string(),
         ]);
         // zlib 1.3.2 installs its MSVC static target as zs.lib, which
         // CMake's legacy FindZLIB does not search for. Point downstream
