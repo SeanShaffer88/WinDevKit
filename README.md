@@ -1,6 +1,6 @@
 # WinDevKit
 
-Shared development resources for Sean's Windows desktop software —
+Shared development resources for Windows desktop software —
 the tools, templates, and checklists that every project kept re-inventing.
 Built from real friction: each item maps to a failure or delay that
 actually happened (see [`docs/PAIN_POINTS.md`](docs/PAIN_POINTS.md)).
@@ -35,7 +35,7 @@ actually happened (see [`docs/PAIN_POINTS.md`](docs/PAIN_POINTS.md)).
 
 ## Kit library (merged 2026-11-01)
 
-The 34 kit repositories were merged into this repo on 2026-11-01. Each kit keeps its own folder under `kits/`, with its source, header, tests, docs, and its own README and LICENSE. Each kit's original `.github/workflows/` files are kept inside its folder for reference; they are not active workflows in this repo (GitHub only runs workflows from the root `.github/workflows/`). The original kit repos remain on GitHub as the historical record, including their releases.
+The 34 kit repositories were merged into this repo on 2026-11-01. Each kit keeps its own folder under `kits/`, with its source, header, tests, docs, and its own README and LICENSE. Each kit's original `.github/workflows/` files are kept inside its folder for reference; they are not active workflows in this repo (GitHub only runs workflows from the root `.github/workflows/`). The collection's live CI is the root `kits-ci` workflow — one job per kit (local twin: `tools/gate-kits.sh`) — and future kit releases are cut from this repo with the root `kits-release` workflow. The original kit repos were archived read-only on 2026-11-01; they remain on GitHub as the historical record, including their releases. See [`docs/MIGRATION.md`](docs/MIGRATION.md).
 
 - [ArchiveKit](kits/ArchiveKit/) — Create, list, test and extract ZIP and TAR archives from any language that can call C — zero dependencies, DEFLATE codec built in. DLL #3 in the Windows DLL Collection
 - [BridgeKit](kits/BridgeKit/) — Verified C# and Rust binding generator for the DLL collection, generated from the kits' own headers. Zero-dependency Rust CLI tool.
@@ -170,6 +170,17 @@ bypass), **ShellKit** (context
 menus, associations, jump lists), **NotifyKit** (toasts),
 **MediaKit** (media probing + thumbnails), **SignKit** (Authenticode
 sign/verify; signing half waits on a certificate decision).
+
+## Project documents
+
+- [Features](docs/FEATURES.md) — what the tools, templates and kits provide
+- [Install and use](docs/INSTALL.md) — getting the kits and tools running
+- [Architecture](docs/ARCHITECTURE.md) — repository layout and how CI/releases work
+- [Compatibility](docs/COMPATIBILITY.md) — platforms, targets and runtimes
+- [Migration](docs/MIGRATION.md) — the 2026-11-01 kit monorepo merge, explained
+- [Changelog](docs/CHANGELOG.md) · [Roadmap](docs/ROADMAP.md) · [Audit](docs/AUDIT.md)
+- [Troubleshooting](docs/TROUBLESHOOTING.md) · [Support](docs/SUPPORT.md) · [Security](docs/SECURITY.md)
+- [Contributing](docs/CONTRIBUTING.md) · [Code of Conduct](docs/CODE_OF_CONDUCT.md) · [Governance](docs/GOVERNANCE.md) · [Maintainers](docs/MAINTAINERS.md) · [Credits](docs/CREDITS.md)
 
 ## License
 
