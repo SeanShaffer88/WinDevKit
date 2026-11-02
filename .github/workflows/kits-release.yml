@@ -1,0 +1,166 @@
+# Monorepo release workflow for the kit collection under kits/.
+#
+# One workflow releases any single kit. Two ways to run it:
+#   - Push a tag named <Kit>-v<Version> (e.g. WatchKit-v0.2.1).
+#   - Run it manually (workflow_dispatch), picking the kit and the
+#     version; the release and its tag are created at current main.
+# It builds the kit on Windows (static CRT via the kit's own
+# .cargo/config.toml), packages the same zip the kit's standalone
+# release shipped — <Kit>-<Version>-x64.zip holding the DLL, its
+# import lib, the header, LICENSE and README.md (BridgeKit ships
+# its .exe instead) — writes SHA256SUMS.txt for the zip, and
+# attaches both to the GitHub Release for the tag. Kits are exempt
+# from the V2.0 installer (MSI) leg (SEAN, 2026-11-01): a kit
+# release is the zip plus SHA256SUMS.txt.
+# OCRKit fetches its pinned engine sources first (fetch.ps1,
+# SHA-256-verified), exactly as its standalone release did.
+# The per-kit table in the resolve step mirrors each kit's own
+# .github/workflows/release.yml, kept in its folder for reference.
+# Binaries are unsigned.
+name: kits-release
+on:
+  push:
+    tags: ["*-v*"]
+  workflow_dispatch:
+    inputs:
+      kit:
+        description: Kit to release
+        type: choice
+        required: true
+        options:
+          - ArchiveKit
+          - BridgeKit
+          - ClipKit
+          - CrashKit
+          - DiagKit
+          - EmbedKit
+          - FileMetaKit
+          - FileOpsKit
+          - FixtureKit
+          - ImageKit
+          - InstanceKit
+          - JobKit
+          - LinkKit
+          - LogKit
+          - MediaKit
+          - NetKit
+          - NotifyKit
+          - OCRKit
+          - PDFKit
+          - PathKit
+          - ProcessKit
+          - ProviderKit
+          - RegKit
+          - RenameKit
+          - SettingsKit
+          - ShellInteropKit
+          - ShellKit
+          - SignKit
+          - ThumbKit
+          - TimeKit
+          - UiProbeKit
+          - UpdateKit
+          - VaultKit
+          - WatchKit
+      version:
+        description: "Version, e.g. v0.2.1"
+        type: string
+        required: true
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve kit + version
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $kit = "${{ inputs.kit }}"
+            $ver = "${{ inputs.version }}"
+          } else {
+            $tag = "${{ github.ref_name }}"
+            $idx = $tag.IndexOf("-v")
+            if ($idx -lt 1) { throw "Tag '$tag' is not of the form <Kit>-v<Version>" }
+            $kit = $tag.Substring(0, $idx)
+            $ver = $tag.Substring($idx + 1)
+          }
+          $table = @{
+            ArchiveKit     = @{ lib = "archive_kit";       header = "archivekit.h" }
+            BridgeKit      = @{ exe = "bridgekit" }
+            ClipKit        = @{ lib = "clip_kit";          header = "clipkit.h" }
+            CrashKit       = @{ lib = "crashkit";          header = "crashkit.h" }
+            DiagKit        = @{ lib = "diag_kit";          header = "diagkit.h" }
+            EmbedKit       = @{ lib = "embedkit";          header = "embedkit.h" }
+            FileMetaKit    = @{ lib = "file_meta_kit";     header = "filemetakit.h" }
+            FileOpsKit     = @{ lib = "file_ops_kit";      header = "fileopskit.h" }
+            FixtureKit     = @{ lib = "fixture_kit";       header = "fixturekit.h" }
+            ImageKit       = @{ lib = "imagekit";          header = "imagekit.h" }
+            InstanceKit    = @{ lib = "instance_kit";      header = "instancekit.h" }
+            JobKit         = @{ lib = "job_kit";           header = "jobkit.h" }
+            LinkKit        = @{ lib = "link_kit";          header = "linkkit.h" }
+            LogKit         = @{ lib = "log_kit";           header = "logkit.h" }
+            MediaKit       = @{ lib = "media_kit";         header = "mediakit.h" }
+            NetKit         = @{ lib = "net_kit";           header = "netkit.h" }
+            NotifyKit      = @{ lib = "notify_kit";        header = "notifykit.h" }
+            OCRKit         = @{ lib = "ocrkit";            header = "ocrkit.h"; fetch = $true }
+            PDFKit         = @{ lib = "pdfkit";            header = "pdfkit.h" }
+            PathKit        = @{ lib = "path_kit";          header = "pathkit.h" }
+            ProcessKit     = @{ lib = "process_kit";       header = "processkit.h" }
+            ProviderKit    = @{ lib = "provider_kit";      header = "providerkit.h" }
+            RegKit         = @{ lib = "reg_kit";           header = "regkit.h" }
+            RenameKit      = @{ lib = "rename_kit";        header = "renamekit.h" }
+            SettingsKit    = @{ lib = "settings_kit";      header = "settingskit.h" }
+            ShellInteropKit = @{ lib = "shell_interop_kit"; header = "shellinteropkit.h" }
+            ShellKit       = @{ lib = "shell_kit";         header = "shellkit.h" }
+            SignKit        = @{ lib = "sign_kit";          header = "signkit.h" }
+            ThumbKit       = @{ lib = "thumb_kit";         header = "thumbkit.h" }
+            TimeKit        = @{ lib = "timekit";           header = "timekit.h" }
+            UiProbeKit     = @{ lib = "ui_probe_kit";      header = "uiprobekit.h" }
+            UpdateKit      = @{ lib = "updatekit";         header = "updatekit.h" }
+            VaultKit       = @{ lib = "vaultkit";          header = "vaultkit.h" }
+            WatchKit       = @{ lib = "watch_kit";         header = "watchkit.h" }
+          }
+          if (-not $table.ContainsKey($kit)) { throw "Unknown kit '$kit' — no packaging data in kits-release.yml" }
+          $e = $table[$kit]
+          "KIT=$kit"     >> $env:GITHUB_ENV
+          "VER=$ver"     >> $env:GITHUB_ENV
+          "TAG=$kit-$ver" >> $env:GITHUB_ENV
+          "LIB=$($e.lib)"       >> $env:GITHUB_ENV
+          "HEADER=$($e.header)" >> $env:GITHUB_ENV
+          "EXE=$($e.exe)"       >> $env:GITHUB_ENV
+          "FETCH=$($e.fetch -eq $true)" >> $env:GITHUB_ENV
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Fetch pinned engine sources (OCRKit, SHA-256 verified)
+        if: env.FETCH == 'True'
+        working-directory: kits/${{ env.KIT }}
+        run: ./fetch.ps1
+      - name: Build release (static CRT via the kit's .cargo/config.toml)
+        working-directory: kits/${{ env.KIT }}
+        run: cargo build --release --locked
+      - name: Package zip + SHA256SUMS.txt
+        shell: pwsh
+        working-directory: kits/${{ env.KIT }}
+        run: |
+          $stage = "$env:GITHUB_WORKSPACE/dist/$env:KIT-$env:VER-x64"
+          New-Item -ItemType Directory -Force $stage | Out-Null
+          if ($env:EXE) {
+            Copy-Item "target/release/$env:EXE.exe" $stage
+          } else {
+            Copy-Item "target/release/$env:LIB.dll" $stage
+            Copy-Item "target/release/$env:LIB.dll.lib" $stage
+            Copy-Item "include/$env:HEADER" $stage
+          }
+          Copy-Item LICENSE $stage
+          Copy-Item README.md $stage
+          $zip = "$env:GITHUB_WORKSPACE/dist/$env:KIT-$env:VER-x64.zip"
+          Compress-Archive -Path "$stage/*" -DestinationPath $zip
+          $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
+          "$hash  $env:KIT-$env:VER-x64.zip" | Out-File -Encoding ascii "$env:GITHUB_WORKSPACE/dist/SHA256SUMS.txt"
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          files: |
+            dist/*.zip
+            dist/SHA256SUMS.txt
