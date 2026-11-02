@@ -32,17 +32,20 @@ checks were in at the last full pass. Detail lives in
   and re-verified in the follow-up run.
 - Every published file in the merge and the conformance passes
   was read back and compared byte-for-byte after upload.
-- Field evidence predates the merge: the 2026-10-28 smoke run
-  (116/116) and manual demos verified the collection's earlier
-  builds on a real machine.
+- `kits-release` exercised end to end: OCRKit v0.1.1 released
+  from this repository, its zip re-downloaded and verified
+  against the attached `SHA256SUMS.txt`.
+- Field evidence: the 2026-10-28 smoke run (116/116) and manual
+  demos verified the collection's earlier builds on a real
+  machine, and the static-CRT OCRKit v0.1.1 DLL passed its field
+  test on a real machine on 2026-11-01 (hash match, DLL loads,
+  engine responds).
 
 ## Known gaps
 
-- The static-CRT kit builds are CI-verified but have not yet had
-  a field smoke re-run; that needs a kit release from this repo
-  plus a run of the smoke pack against it.
-- The `kits-release` workflow has not yet cut a release; its
-  first run is the remaining unproven path.
+- The remaining kits' static-CRT builds are CI-verified but have
+  not yet had field runs; each is checked as it is re-released
+  from this repository.
 - Kit behavior beyond what CI and the smoke pack exercise (for
   example, shell integration applied under a real application's
   identity) is verified per kit as noted in each kit's README.
