@@ -1,7 +1,10 @@
 # Release workflow — builds the x64 DLL package and attaches it to
 # the GitHub Release for the pushed version tag. The release itself
 # (tag + notes) is created in the GitHub web UI; this workflow only
-# builds and uploads the zip. Binaries are unsigned.
+# builds and uploads the zip plus its SHA256SUMS.txt. The crate must
+# carry the static-CRT .cargo/config.toml (target-feature=
+# +crt-static for the MSVC targets) so the DLL needs no separate
+# VC++ runtime. Binaries are unsigned.
 name: release
 on:
   push:
@@ -15,7 +18,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo build --release --locked
-      - name: Package x64 DLL zip
+      - name: Package x64 DLL zip + SHA256SUMS.txt
         shell: pwsh
         run: |
           $ver = "${{ github.ref_name }}"
@@ -27,6 +30,10 @@ jobs:
           Copy-Item LICENSE $stage
           Copy-Item README.md $stage
           Compress-Archive -Path "$stage/*" -DestinationPath "dist/@KIT@-$ver-x64.zip"
+          $hash = (Get-FileHash "dist/@KIT@-$ver-x64.zip" -Algorithm SHA256).Hash.ToLower()
+          "$hash  @KIT@-$ver-x64.zip" | Out-File -Encoding ascii "dist/SHA256SUMS.txt"
       - uses: softprops/action-gh-release@v2
         with:
-          files: dist/*.zip
+          files: |
+            dist/*.zip
+            dist/SHA256SUMS.txt
