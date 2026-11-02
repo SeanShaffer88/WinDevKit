@@ -12,15 +12,19 @@
 - The monorepo merge (2026-11-01): one repository, one CI gate
   (`kits-ci`, 34/34 green), one release workflow (`kits-release`),
   static-CRT builds for every kit.
+- First kit release cut from the monorepo: OCRKit v0.1.1
+  (2026-11-01), its assets re-downloaded and hash-verified.
+- Field check of a static-CRT build: the OCRKit v0.1.1 DLL
+  passed its field test on a real Windows machine (2026-11-01) —
+  the download matched its published SHA-256 sum, the DLL loads
+  and reports its version, and the OCR engine responds with a
+  real engine error when its language data is absent.
 
 ## Next
 
-- First kit release cut from the monorepo via `kits-release`,
-  proving the tag-to-release path end to end.
-- A field smoke-test re-run against the static-CRT builds (the
-  2026-10-28 field pass covered the earlier dynamic-CRT builds;
-  the static-CRT builds are CI-verified, including end-to-end
-  proofs, but not yet field-run).
+- Field smoke re-runs for the remaining kits' static-CRT builds,
+  as each kit is re-released from the monorepo (the 2026-10-28
+  field pass covered the earlier dynamic-CRT builds).
 
 ## Open, from the original roadmap
 
