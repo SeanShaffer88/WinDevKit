@@ -21,10 +21,12 @@ on:
     paths:
       - 'kits/**'
       - '.github/workflows/kits-ci.yml'
+      - '.github/workflows/kits-release.yml'
   pull_request:
     paths:
       - 'kits/**'
       - '.github/workflows/kits-ci.yml'
+      - '.github/workflows/kits-release.yml'
   workflow_dispatch:
 permissions:
   contents: read
