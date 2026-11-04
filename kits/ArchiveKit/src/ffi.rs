@@ -170,6 +170,14 @@ fn safe_directories(path: &Path) -> AResult<()> {
 /// set that rejects the timestamp must not fail the extraction.
 fn write_extracted(target: &Path, data: &[u8], mtime: Option<i64>) -> AResult<()> {
     use std::io::Write;
+    write_extracted_with(target, mtime, |output| output.write_all(data))
+}
+
+fn write_extracted_with(
+    target: &Path,
+    mtime: Option<i64>,
+    write: impl FnOnce(&mut std::fs::File) -> std::io::Result<()>,
+) -> AResult<()> {
     if let Some(parent) = target.parent() {
         safe_directories(parent)?;
     }
@@ -187,7 +195,7 @@ fn write_extracted(target: &Path, data: &[u8], mtime: Option<i64>) -> AResult<()
                 ),
             )
         })?;
-    if let Err(e) = output.write_all(data) {
+    if let Err(e) = write(&mut output) {
         // Never leave a truncated file behind: it would look like a
         // successful extraction to whatever runs next.
         drop(output);
@@ -400,29 +408,57 @@ fn materialize_hardlink(
     target_path: &Path,
     dest: &Path,
     written: &std::collections::HashSet<String>,
-) -> bool {
+    total: &mut u64,
+) -> AResult<bool> {
     let Some(link) = meta.link_target.as_deref() else {
-        return false;
+        return Ok(false);
     };
     let clean = strip_dot_slash(link);
     if clean.is_empty() {
-        return false;
+        return Ok(false);
     }
     // The target is archive data, so it goes through the same guard as any
     // other name; a link pointing outside the destination is never followed.
     let Some(source) = safe_join(dest, clean) else {
-        return false;
+        return Ok(false);
     };
     if !written.contains(&collision_key(&source)) {
         // Either the target is not in this selection or it is not a file we
         // wrote, so there is nothing to copy from.
-        return false;
+        return Ok(false);
     }
-    if std::fs::copy(&source, target_path).is_err() {
-        return false;
+    if let Some(parent) = source.parent() {
+        safe_directories(parent)?;
     }
+    let source_meta =
+        std::fs::symlink_metadata(&source).map_err(|e| (ERR_PLATFORM, e.to_string()))?;
+    #[cfg(windows)]
+    let reparse = {
+        use std::os::windows::fs::MetadataExt;
+        source_meta.file_attributes() & 0x400 != 0
+    };
+    #[cfg(not(windows))]
+    let reparse = source_meta.file_type().is_symlink();
+    if reparse || !source_meta.is_file() {
+        return crate::err(ERR_CORRUPT, "hardlink source is not a plain file");
+    }
+    use std::io::Read;
+    let mut data = Vec::new();
+    std::fs::File::open(&source)
+        .map_err(|e| (ERR_PLATFORM, e.to_string()))?
+        .take(crate::MAX_ENTRY_BYTES as u64 + 1)
+        .read_to_end(&mut data)
+        .map_err(|e| (ERR_PLATFORM, e.to_string()))?;
+    if data.len() > crate::MAX_ENTRY_BYTES {
+        return crate::err(ERR_CORRUPT, "hardlink source exceeds entry limit");
+    }
+    *total = total
+        .checked_add(data.len() as u64)
+        .filter(|&size| size <= crate::MAX_TOTAL_BYTES)
+        .ok_or((ERR_CORRUPT, "extraction exceeds total size limit".into()))?;
+    write_extracted(target_path, &data, meta.modified_unix)?;
     apply_read_only(target_path, meta.read_only);
-    true
+    Ok(true)
 }
 
 fn extract_prefix(bytes: &[u8], listed: &Listed, dest: &Path, prefix: &str) -> AResult<u64> {
@@ -440,6 +476,7 @@ fn extract_prefix(bytes: &[u8], listed: &Listed, dest: &Path, prefix: &str) -> A
     }
     let basename = prefix.rsplit('/').next().unwrap_or(&prefix).to_string();
     let mut count = 0u64;
+    let mut total = 0u64;
     let mut directory_times: Vec<(std::path::PathBuf, i64)> = Vec::new();
     let mut directory_attributes: Vec<std::path::PathBuf> = Vec::new();
     let mut seen_files: std::collections::HashMap<String, String> =
@@ -493,7 +530,7 @@ fn extract_prefix(bytes: &[u8], listed: &Listed, dest: &Path, prefix: &str) -> A
             continue;
         }
         if meta.kind == crate::EntryKind::Hardlink {
-            if materialize_hardlink(meta, &target, dest, &written) {
+            if materialize_hardlink(meta, &target, dest, &written, &mut total)? {
                 written.insert(collision_key(&target));
                 count += 1;
                 continue;
@@ -521,6 +558,10 @@ fn extract_prefix(bytes: &[u8], listed: &Listed, dest: &Path, prefix: &str) -> A
             );
         }
         let data = listed.read(bytes, index)?;
+        total = total
+            .checked_add(data.len() as u64)
+            .filter(|&size| size <= crate::MAX_TOTAL_BYTES)
+            .ok_or((ERR_CORRUPT, "extraction exceeds total size limit".into()))?;
         write_extracted(&target, &data, meta.modified_unix)?;
         apply_read_only(&target, meta.read_only);
         written.insert(collision_key(&target));
@@ -538,6 +579,7 @@ fn extract_prefix(bytes: &[u8], listed: &Listed, dest: &Path, prefix: &str) -> A
 
 fn extract_all(bytes: &[u8], listed: &Listed, dest: &Path) -> AResult<u64> {
     let mut count = 0u64;
+    let mut total = 0u64;
     let mut directory_times: Vec<(std::path::PathBuf, i64)> = Vec::new();
     let mut directory_attributes: Vec<std::path::PathBuf> = Vec::new();
     let mut seen_files: std::collections::HashMap<String, String> =
@@ -574,7 +616,7 @@ fn extract_all(bytes: &[u8], listed: &Listed, dest: &Path) -> AResult<u64> {
             continue;
         }
         if meta.kind == crate::EntryKind::Hardlink {
-            if materialize_hardlink(meta, &target, dest, &written) {
+            if materialize_hardlink(meta, &target, dest, &written, &mut total)? {
                 written.insert(collision_key(&target));
                 count += 1;
                 continue;
@@ -602,6 +644,10 @@ fn extract_all(bytes: &[u8], listed: &Listed, dest: &Path) -> AResult<u64> {
             );
         }
         let data = listed.read(bytes, index)?;
+        total = total
+            .checked_add(data.len() as u64)
+            .filter(|&size| size <= crate::MAX_TOTAL_BYTES)
+            .ok_or((ERR_CORRUPT, "extraction exceeds total size limit".into()))?;
         write_extracted(&target, &data, meta.modified_unix)?;
         apply_read_only(&target, meta.read_only);
         written.insert(collision_key(&target));
@@ -1811,6 +1857,83 @@ mod tests {
         // The whole archive still verifies, links included.
         assert_eq!(ak_test(archive_c.as_ptr()), 4);
         let _ = fs::remove_dir_all(&base);
+    }
+
+    #[test]
+    fn hardlinks_use_exclusive_protected_writes() {
+        let base = std::env::temp_dir().join(format!("ak-hardlink-guard-{}", std::process::id()));
+        fs::create_dir_all(&base).unwrap();
+        let seed = tar::create(&[NewTarEntry {
+            name: "real.txt".into(),
+            data: b"body".to_vec(),
+            modified_unix: 0,
+            is_dir: false,
+            read_only: false,
+        }])
+        .unwrap();
+        for prefix in [false, true] {
+            for (case, name, success) in [
+                ("nested", "nested/copy.txt", true),
+                ("existing", "copy.txt", false),
+                ("duplicate", "real.txt", false),
+                ("case", "REAL.txt", !cfg!(windows)),
+            ] {
+                let dest = base.join(format!("{prefix}-{case}"));
+                fs::create_dir_all(&dest).unwrap();
+                if case == "existing" {
+                    fs::write(dest.join(name), b"sentinel").unwrap();
+                }
+                let mut archive = seed[..seed.len() - 1024].to_vec();
+                archive.extend_from_slice(&link_header(&seed, name, b'1', "real.txt"));
+                archive.extend_from_slice(&[0u8; 1024]);
+                let listed = list_archive(&archive, Format::Tar).unwrap();
+                let result = if prefix {
+                    // Select a prefix while preserving the existing root-relative link semantics.
+                    let mut prefixed = archive.clone();
+                    let mut header = link_header(&seed, "folder/real.txt", b'0', "");
+                    header[124..136].copy_from_slice(&seed[124..136]);
+                    retag(&mut header, b'0');
+                    prefixed[..512].copy_from_slice(&header);
+                    let header = link_header(&seed, &format!("folder/{name}"), b'1', "real.txt");
+                    prefixed[1024..1536].copy_from_slice(&header);
+                    let listed = list_archive(&prefixed, Format::Tar).unwrap();
+                    extract_prefix(&prefixed, &listed, &dest, "folder")
+                } else {
+                    extract_all(&archive, &listed, &dest)
+                };
+                assert_eq!(result.is_ok(), success, "{prefix}-{case}: {result:?}");
+                assert_eq!(fs::read(dest.join("real.txt")).unwrap(), b"body");
+                if case == "existing" {
+                    assert_eq!(fs::read(dest.join(name)).unwrap(), b"sentinel");
+                }
+                if success {
+                    assert_eq!(fs::read(dest.join(name)).unwrap(), b"body");
+                }
+            }
+        }
+        let source = base.join("source.txt");
+        fs::write(&source, b"body").unwrap();
+        let header = link_header(&seed, "copy.txt", b'1', "source.txt");
+        let mut archive = header.to_vec();
+        archive.extend_from_slice(&[0u8; 1024]);
+        let listed = list_archive(&archive, Format::Tar).unwrap();
+        let written = std::collections::HashSet::from([collision_key(&source)]);
+        let mut total = crate::MAX_TOTAL_BYTES;
+        let copy = base.join("over-budget.txt");
+        assert!(
+            materialize_hardlink(listed.meta_at(0), &copy, &base, &written, &mut total).is_err()
+        );
+        assert!(!copy.exists());
+        assert_eq!(fs::read(&source).unwrap(), b"body");
+        let partial = base.join("partial");
+        let result = write_extracted_with(&partial, None, |file| {
+            use std::io::Write;
+            file.write_all(b"partial")?;
+            Err(std::io::Error::other("injected write failure"))
+        });
+        assert!(result.is_err());
+        assert!(!partial.exists());
+        fs::remove_dir_all(base).unwrap();
     }
 
     #[test]

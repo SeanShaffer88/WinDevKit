@@ -460,6 +460,66 @@ with tempfile.TemporaryDirectory(prefix="archivekit-interop-") as folder:
     assert lib.ak_last_error_code() == 2  # AK_ERR_NOT_SUPPORTED
     assert b"symbolic link" in lib.ak_last_error()
 
+    for prefix in (False, True):
+        for target in ("../escape.txt", "missing.txt", "real.txt"):
+            arc = root / "skipped-hardlink.tar"
+            with tarfile.open(arc, "w") as t:
+                name_prefix = "folder/" if prefix else ""
+                link = tarfile.TarInfo(name_prefix + "early.txt")
+                link.type = tarfile.LNKTYPE
+                link.linkname = target
+                t.addfile(link)
+                item = tarfile.TarInfo(name_prefix + "real.txt")
+                item.size = 4
+                t.addfile(item, io.BytesIO(b"body"))
+            dest = root / f"skipped-hardlink-{prefix}-{target.replace('/', '_')}"
+            result = extract_prefix(arc, dest, "folder") if prefix else extract(arc, dest)
+            assert result == 1, (result, lib.ak_last_error())
+            assert not (dest / "early.txt").exists()
+            assert (dest / "real.txt").read_bytes() == b"body"
+            assert b"early.txt" in lib.ak_last_warning()
+
+    # Both entry points must reject a hardlink destination beneath a reparse point.
+    for prefix in (False, True):
+        dest = root / f"hardlink-reparse-{prefix}"
+        dest.mkdir()
+        outside = root / f"hardlink-outside-{prefix}"
+        outside.mkdir()
+        (outside / "copy.txt").write_bytes(b"sentinel")
+        junction = dest / "nested"
+        if os.name == "nt":
+            setup = root / "make-junction.ps1"
+            setup.write_text(
+                "param([string]$Link, [string]$Target)\n"
+                "New-Item -ItemType Junction -Path $Link -Target $Target -ErrorAction Stop | Out-Null\n",
+                encoding="utf-8",
+            )
+            subprocess.run(
+                ["pwsh", "-NoProfile", "-File", str(setup), str(junction), str(outside)],
+                check=True, capture_output=True, creationflags=subprocess.CREATE_NO_WINDOW,
+            )
+        else:
+            junction.symlink_to(outside, target_is_directory=True)
+        try:
+            arc = root / f"hardlink-reparse-{prefix}.tar"
+            with tarfile.open(arc, "w") as t:
+                name_prefix = "folder/" if prefix else ""
+                item = tarfile.TarInfo(name_prefix + "real.txt")
+                item.size = 4
+                t.addfile(item, io.BytesIO(b"body"))
+                item = tarfile.TarInfo(name_prefix + "nested/copy.txt")
+                item.type = tarfile.LNKTYPE
+                item.linkname = "real.txt"
+                t.addfile(item)
+            result = extract_prefix(arc, dest, "folder") if prefix else extract(arc, dest)
+            assert result == -1, (result, lib.ak_last_error())
+            assert (outside / "copy.txt").read_bytes() == b"sentinel"
+        finally:
+            if os.name == "nt":
+                os.rmdir(junction)
+            else:
+                junction.unlink()
+
     # ---- directories marked only by the DOS attribute ----------------------
     attrs_zip = root / "attrs.zip"
     attrs_zip.write_bytes(one_entry_zip(b"folder", b"", 0, attributes=0x10))
