@@ -75,12 +75,18 @@ jobs:
       - uses: actions/checkout@v4
       - name: Resolve kit + version
         shell: pwsh
+        env:
+          RELEASE_EVENT: ${{ github.event_name }}
+          RELEASE_KIT: ${{ inputs.kit }}
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_REF: ${{ github.ref_name }}
         run: |
-          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
-            $kit = "${{ inputs.kit }}"
-            $ver = "${{ inputs.version }}"
+          if ($env:RELEASE_EVENT -eq "workflow_dispatch") {
+            if ($env:GITHUB_REF -cne "refs/heads/main") { throw "Manual releases must run from main" }
+            $kit = $env:RELEASE_KIT
+            $ver = $env:RELEASE_VERSION
           } else {
-            $tag = "${{ github.ref_name }}"
+            $tag = $env:RELEASE_REF
             $idx = $tag.IndexOf("-v")
             if ($idx -lt 1) { throw "Tag '$tag' is not of the form <Kit>-v<Version>" }
             $kit = $tag.Substring(0, $idx)
@@ -122,12 +128,30 @@ jobs:
             VaultKit       = @{ lib = "vaultkit";          header = "vaultkit.h" }
             WatchKit       = @{ lib = "watch_kit";         header = "watchkit.h" }
           }
-          if (-not $table.ContainsKey($kit)) { throw "Unknown kit '$kit' — no packaging data in kits-release.yml" }
+          if (-not ($table.Keys -ccontains $kit)) { throw "Unknown kit '$kit' — no packaging data in kits-release.yml" }
+          if ($ver -cnotmatch '\Av(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?\z') { throw "Invalid release version '$ver'" }
+          python -c 'import pathlib, sys, tomllib; source = tomllib.loads((pathlib.Path("kits") / sys.argv[1] / "Cargo.toml").read_text(encoding="utf-8"))["package"]["version"]; sys.exit(0 if source == sys.argv[2][1:] else f"Version mismatch: source {source}, release {sys.argv[2]}")' $kit $ver
+          if ($LASTEXITCODE -ne 0) { throw "Kit source/version validation failed" }
+          $releaseSha = git rev-parse HEAD
+          if ($LASTEXITCODE -ne 0 -or $releaseSha -cnotmatch '\A[0-9a-f]{40}\z') { throw "Cannot resolve checked-out commit" }
+          $tag = "$kit-$ver"
+          $tagRef = "refs/tags/$tag"
+          $gitArgs = @('ls-remote', 'origin', $tagRef, "$tagRef^{}")
+          $remoteRefs = @(git @gitArgs)
+          if ($LASTEXITCODE -ne 0) { throw "Cannot verify remote release tag" }
+          $remoteTags = @{}
+          foreach ($remoteRef in $remoteRefs) {
+            if ($remoteRef -cnotmatch '\A([0-9a-f]{40})\s+(refs/tags/\S+)\z') { throw "Invalid remote tag response" }
+            $remoteTags[$Matches[2]] = $Matches[1]
+          }
+          $remoteSha = if ($remoteTags.ContainsKey("$tagRef^{}")) { $remoteTags["$tagRef^{}"] } else { $remoteTags[$tagRef] }
+          if ($remoteSha -and $remoteSha -cne $releaseSha) { throw "Release tag does not match checked-out commit" }
+          "KIT_RELEASE_SHA=$releaseSha" >> $env:GITHUB_ENV
           $e = $table[$kit]
           "KIT=$kit"     >> $env:GITHUB_ENV
           "VER=$ver"     >> $env:GITHUB_ENV
           "TAG=$kit-$ver" >> $env:GITHUB_ENV
-          "LIB=$($e.lib)"       >> $env:GITHUB_ENV
+          "KIT_LIB=$($e.lib)"   >> $env:GITHUB_ENV
           "HEADER=$($e.header)" >> $env:GITHUB_ENV
           "EXE=$($e.exe)"       >> $env:GITHUB_ENV
           "FETCH=$($e.fetch -eq $true)" >> $env:GITHUB_ENV
@@ -148,8 +172,8 @@ jobs:
           if ($env:EXE) {
             Copy-Item "target/release/$env:EXE.exe" $stage
           } else {
-            Copy-Item "target/release/$env:LIB.dll" $stage
-            Copy-Item "target/release/$env:LIB.dll.lib" $stage
+            Copy-Item "target/release/$env:KIT_LIB.dll" $stage
+            Copy-Item "target/release/$env:KIT_LIB.dll.lib" $stage
             Copy-Item "include/$env:HEADER" $stage
           }
           Copy-Item LICENSE $stage
@@ -161,6 +185,7 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG }}
+          target_commitish: ${{ env.KIT_RELEASE_SHA }}
           files: |
             dist/*.zip
             dist/SHA256SUMS.txt
