@@ -7,6 +7,6 @@
 - **Refuse a lossy backup.** The Windows snapshot errors on non-string value types instead of skipping them. "Backing up" a subtree while silently dropping a DWORD is worse than refusing the apply; do not soften that into a warning.
 - **Association removal does not delete the extension key.** It unlinks (deletes the default value) and deletes the ProgID key. The extension key can hold values this registration never owned; deleting it would be destroying other software's state.
 - **Sanitizers are the path-injection boundary.** Every spec field that becomes part of a key path passes a sanitizer in `lib.rs`. New planners or fields must do the same — never format a raw spec string into a key path.
-- The JSON engine (src/json.rs) is the family design — duplicate keys in one object are a PARSE ERROR by design; do not "fix" that into last-wins.
+- The JSON engine (win-common's json module) is the family design — duplicate keys in one object are a PARSE ERROR by design; do not "fix" that into last-wins.
 - Jump lists are roadmap, NOT in v0.1 (see ROADMAP.md). Do not half-add them.
 - Gate: WinDevKit tools/gate.sh (fmt + clippy both targets + full tests). Check/clippy do not link — CI's real Windows build is the link gate.

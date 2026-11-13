@@ -36,7 +36,7 @@ int main(void) {
 - **Six value types, represented exactly.** `sz` and `expand_sz` as strings, `dword` and `qword` as numbers, `multi_sz` as an array of strings, `binary` as a base64 string. A stored value of any other registry type is reported as an error (RG_ERR_NOT_SUPPORTED), never guessed at or mangled.
 - **The default value is first-class.** Omit `"name"` (or pass `""`) to address a key's `(Default)` value; listings show it with `"name": ""`.
 - **Backend trait, testable anywhere.** All logic runs against a backend trait; the real backend talks to advapi32 on Windows, and the test suite runs the full operation set against an in-memory fake, so manifest build/apply logic is verified on any host. Off Windows, every call fails cleanly with RG_ERR_NOT_SUPPORTED.
-- **Zero dependencies.** Hand-rolled JSON (duplicate keys in one object are a parse error, by design), hand-declared advapi32 bindings, small C ABI.
+- **Zero external dependencies.** Hand-rolled JSON (duplicate keys in one object are a parse error, by design), hand-declared advapi32 bindings, small C ABI.
 
 ## The API in one screen
 

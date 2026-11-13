@@ -39,7 +39,7 @@ int main(void) {
 - **Actions through the real patterns.** `up_action` resolves a path and performs `invoke`, `toggle` or `set_value` through the matching UI Automation pattern (Invoke / Toggle / Value), or `focus` through the element's own SetFocus. An element that does not support the pattern returns UP_ERR_NOT_SUPPORTED; a path that does not resolve returns UP_ERR_NOT_FOUND.
 - **Stable addressing.** Paths index the same raw view `up_inspect` prints, so what you read is what you address. Re-inspect after the UI changes shape — a path is only as stable as the tree it came from.
 - **No fake success.** On non-Windows platforms every probe returns UP_ERR_NOT_SUPPORTED. A failed property read on a live element degrades that one field to empty/zero instead of aborting the whole walk — live desktops have elements being torn down mid-walk, and a probe that dies on the first stale element is useless there.
-- **Zero dependencies.** Hand-rolled JSON (duplicate keys in one object are a parse error, by design), hand-declared Win32 bindings, COM resolved dynamically at runtime (ole32/oleaut32), small C ABI.
+- **Zero external dependencies.** Hand-rolled JSON (duplicate keys in one object are a parse error, by design), hand-declared Win32 bindings, COM resolved dynamically at runtime (ole32/oleaut32), small C ABI.
 
 ## The API in one screen
 

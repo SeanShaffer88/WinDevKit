@@ -31,7 +31,7 @@ int main(void) {
 - **The Authenticode hash, exactly defined.** `sg_authenticode_hash` returns the SHA-256 image hash: every byte hashed except the CheckSum field, the security directory entry itself, and the certificate table; bytes after the certificate table count in whole 8-byte blocks only, per the specification's alignment rule. This is the digest a signature must match — an inspection value, not a trust decision.
 - **Trust comes from Windows, or nowhere.** `sg_verify` calls WinVerifyTrust (`WINTRUST_ACTION_GENERIC_VERIFY_V2`, no UI, revocation checks off) and reports `trusted`, `unsigned`, or `untrusted` with the raw error code attached. On non-Windows platforms it fails cleanly with `SG_ERR_NOT_SUPPORTED` instead of guessing.
 - **Malformed files are data, not crashes.** Every read is bounds-checked. A truncated or corrupt PE returns a clean error; a file that is not a PE at all reports `{"is_pe":false}` from `sg_inspect`.
-- **Zero dependencies.** Hand-rolled PE reader, JSON, and SHA-256; small C ABI; thread-local last-error reporting.
+- **Zero external dependencies.** Hand-rolled PE reader, JSON, and SHA-256; small C ABI; thread-local last-error reporting.
 
 ## The API in one screen
 

@@ -1,7 +1,8 @@
 # UpdateKit — agent notes
 
-- Zero Rust dependencies is a design rule. SHA-256 (src/sha256.rs),
-  the JSON parser (src/json.rs), and the WinHTTP bindings
+- Zero Rust external dependencies is a design rule (win-common, the in-repo shared crate, is the one first-party dependency). SHA-256 is win-common's;
+  the JSON parser (src/json.rs — UpdateKit's own value design, not
+  win-common's), and the WinHTTP bindings
   (src/platform.rs) are hand-written on purpose; correctness anchors
   are the FIPS SHA-256 vectors and the parser/version test suites —
   keep those tests intact when refactoring.

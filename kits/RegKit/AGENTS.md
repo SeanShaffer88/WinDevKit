@@ -6,6 +6,6 @@
 - The default value is name "" at the backend layer and an absent/`""` name at the spec layer. Both Windows (NULL value name) and the fake key on this. Do not invent a sentinel name like "(Default)" — it would collide with a real value of that name and break list/undo round-trips.
 - A qword above i64::MAX makes a manifest unrepresentable exactly, so write/delete refuse it BEFORE changing anything (`check_manifest_representable`). Silently recording a lossy old value would make undo a data-corruption tool; a loud refusal is the honest behaviour.
 - The backend trait is the test seam: all operation logic must stay backend-agnostic so the fake covers it. Windows-only behaviour belongs in `platform.rs`'s `win` module and nowhere else; the off-Windows backend returns ERR_NOT_SUPPORTED for everything, never a stub success.
-- The JSON engine (src/json.rs) is the family design — duplicate keys in one object are a PARSE ERROR by design; do not "fix" that into last-wins.
-- Zero dependencies; every advapi32 extern block carries `#[link(name = "advapi32")]`. Check/clippy do not link — CI's real Windows build is the link gate.
+- The JSON engine (win-common's json module) is the family design — duplicate keys in one object are a PARSE ERROR by design; do not "fix" that into last-wins.
+- Zero external dependencies (the one first-party dependency is win-common, the in-repo shared crate); every advapi32 extern block carries `#[link(name = "advapi32")]`. Check/clippy do not link — CI's real Windows build is the link gate.
 - Gate: WinDevKit tools/gate.sh (fmt + clippy both targets + full tests). Windows runtime behaviour is Unverified until the windows-latest CI smoke test (and later a field test) runs the real HKCU roundtrip.

@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-Settings files, done once, correctly: a tiny zero-dependency DLL that loads and saves a JSON settings file **atomically**, carries a **schema version** in the file and runs **your migrations** when it's out of date, and **never writes defaults** — so changing a default in your next release can't silently change the meaning of settings files already on your users' disks. You talk to it through a small C ABI (or the Rust crate directly).
+Settings files, done once, correctly: a tiny zero-external-dependency DLL that loads and saves a JSON settings file **atomically**, carries a **schema version** in the file and runs **your migrations** when it's out of date, and **never writes defaults** — so changing a default in your next release can't silently change the meaning of settings files already on your users' disks. You talk to it through a small C ABI (or the Rust crate directly).
 
 ```c
 SkDoc *doc;

@@ -7,5 +7,5 @@
 - **ole32 is resolved dynamically; there are no COM import libraries.** Do not add a `#[link]` for ole32/shell32 or a `windows` crate dependency to "simplify" the COM code — the zero-dependency, no-new-link-deps shape is deliberate (the ShellKit jump-list precedent).
 - **`app_id: null` vs `""` is a contract.** Only the property store can distinguish an absent AppUserModelID, so only `app_id` is nullable in the read result. Do not "normalize" the other string fields to null — the getters genuinely cannot tell.
 - **GetValue results are cleared with PropVariantClear before anything else happens** (including error returns). Skipping the clear leaks the store's CoTaskMem string per read.
-- The JSON engine (src/json.rs) is the family design — duplicate keys in one object are a PARSE ERROR by design; do not "fix" that into last-wins.
+- The JSON engine (win-common's json module) is the family design — duplicate keys in one object are a PARSE ERROR by design; do not "fix" that into last-wins.
 - Gate: WinDevKit tools/gate.sh (fmt + clippy both targets + full tests). Check/clippy do not link — CI's real Windows build is the link gate, and the Windows-only integration test in `src/ffi.rs` only runs there; the COM runtime stays Unverified until a field test (see QUALITY.md).

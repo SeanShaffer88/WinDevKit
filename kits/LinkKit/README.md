@@ -39,7 +39,7 @@ int main(void) {
 - **Honest read-back.** `lk_read` returns every field as JSON. A string field the shortcut does not carry reads as `""`, except `app_id`, which is a real JSON `null` when the property is absent — the property store knows the difference even when the link getters don't. The target is reported as stored, without environment-string expansion.
 - **Validation before COM, on every platform.** Required fields, unknown fields, absolute paths for every path field (relative, drive-relative and root-relative forms are rejected), the `.lnk` output name, `icon_index` only with an `icon` and within the i32 range, the shell's 1024-character description limit, and the AppUserModelID shape are all checked in the pure core — a bad spec is the same argument error on Linux, in CI, and on the user's machine.
 - **Errors that say what happened.** A missing shortcut is `LK_ERR_NOT_FOUND`, a permission refusal is `LK_ERR_ACCESS_DENIED`, and every COM failure carries its HRESULT in hex in the message.
-- **Zero dependencies.** Hand-rolled JSON (duplicate keys in one object are a parse error, by design), hand-declared COM vtables checked against the `windows` crate's generated bindings, ole32 resolved at runtime — no new import libraries, small C ABI.
+- **Zero external dependencies.** Hand-rolled JSON (duplicate keys in one object are a parse error, by design), hand-declared COM vtables checked against the `windows` crate's generated bindings, ole32 resolved at runtime — no new import libraries, small C ABI.
 
 ## The API in one screen
 

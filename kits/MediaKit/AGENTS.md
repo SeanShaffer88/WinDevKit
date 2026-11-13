@@ -8,5 +8,5 @@
 - Detection is by magic bytes only. Extension-based detection is never a fallback: a renamed file must probe as what it is.
 - MP3 frame scanning validates a candidate header against the following frame's sync before accepting it; removing that check makes random 0xFF bytes inside tags "detect" as MP3.
 - The Ogg final-granule shortcut assumes the last page belongs to the first stream; that is documented in the README. Multi-stream/chained Ogg support means tracking serials, not dropping the assumption silently.
-- The JSON engine (src/json.rs) is the family design — duplicate keys in one object are a PARSE ERROR by design; do not "fix" that into last-wins.
-- Zero dependencies; gate: WinDevKit tools/gate.sh (fmt + clippy both targets + full tests). Check/clippy do not link — CI's real Windows build is the link gate.
+- The JSON engine (win-common's json module) is the family design — duplicate keys in one object are a PARSE ERROR by design; do not "fix" that into last-wins.
+- Zero external dependencies (the one first-party dependency is win-common, the in-repo shared crate); gate: WinDevKit tools/gate.sh (fmt + clippy both targets + full tests). Check/clippy do not link — CI's real Windows build is the link gate.

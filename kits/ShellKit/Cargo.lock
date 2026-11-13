@@ -5,3 +5,10 @@ version = 3
 [[package]]
 name = "shell-kit"
 version = "0.2.0"
+dependencies = [
+ "win-common",
+]
+
+[[package]]
+name = "win-common"
+version = "0.1.0"

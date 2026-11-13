@@ -39,7 +39,7 @@ int main(void) {
 - **Honest warnings.** A command template without the `%1` placeholder — the classic "my program opens but never gets the file" bug — produces a warning in the plan. It stays a warning, because fixed-argument commands are legitimate.
 - **Removal is a plan too.** `sh_remove_plan` builds the delete plan for a registration from the same spec, so removing a verb, association or protocol is backed up and restorable exactly like registering one. Removing an association unlinks the extension and deletes the ProgID key; the extension key itself is left in place, because other values may live under it.
 - **Jump lists (v0.2).** `sh_plan_jump_list` plans an app's custom taskbar jump list: an `app_id` (the Application User Model ID the app's windows carry) plus 1 to 10 tasks, each with a title, an absolute target path, and optional arguments, description (tooltip) and icon. Applying the plan replaces the app's custom jump list wholesale through the shell's DestinationList COM surface — the previous custom list is removed, not merged. The backup records `"previous":"unknown"` because the old list cannot be read back through COM; restoring it clears the custom list entirely, after which Windows shows its standard generated list.
-- **Zero dependencies.** Hand-rolled JSON (duplicate keys in one object are a parse error, by design), hand-declared Win32 bindings (advapi32 linked; ole32 resolved at runtime for the jump-list COM work), small C ABI.
+- **Zero external dependencies.** Hand-rolled JSON (duplicate keys in one object are a parse error, by design), hand-declared Win32 bindings (advapi32 linked; ole32 resolved at runtime for the jump-list COM work), small C ABI.
 
 ## The API in one screen
 

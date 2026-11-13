@@ -28,7 +28,7 @@
 //! `platform`; the C ABI lives in `ffi`.
 
 pub mod ffi;
-pub mod json;
+pub use win_common::json;
 pub mod platform;
 
 pub const VERSION: &str = "0.1.0";

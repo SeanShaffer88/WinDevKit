@@ -19,7 +19,7 @@ pub mod ffi;
 pub mod json;
 pub mod manifest;
 pub mod platform;
-pub mod sha256;
+pub use win_common::sha256;
 pub mod version;
 
 pub const VERSION: &str = "0.1.0";

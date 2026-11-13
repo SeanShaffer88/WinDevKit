@@ -47,7 +47,7 @@ int main(void) {
 - **The window belongs to the host.** The tray half takes the host's window handle (HWND) as a plain integer in the config JSON. The host creates and owns its window as usual; tray callbacks arrive there as message 0x0464 (WM_USER+100). Passing `"hwnd":0` registers an icon-only icon: show/tooltip/remove work, callbacks have nowhere to go.
 - **Real text limits, reported honestly.** The classic buffers are fixed: title 63 visible UTF-16 units, body 255, tooltip 127. Longer text is truncated on a character boundary — a surrogate pair is never split — and the result JSON says `"truncated":true` (per field) instead of pretending the whole text was shown.
 - **No fake success.** On non-Windows platforms the tray calls return NO_ERR_NOT_SUPPORTED. On Windows, a show call only reports `"shown":true` when Shell_NotifyIconW itself succeeded; failures return NO_ERR_PLATFORM with the GetLastError value in the message.
-- **Zero dependencies.** Hand-rolled JSON (duplicate keys in one object are a parse error, by design), hand-declared Win32 bindings, small C ABI.
+- **Zero external dependencies.** Hand-rolled JSON (duplicate keys in one object are a parse error, by design), hand-declared Win32 bindings, small C ABI.
 
 ## The API in one screen
 

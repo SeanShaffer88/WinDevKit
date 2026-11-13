@@ -17,7 +17,7 @@
 //!   clean [`ERR_PARSE`] error, never a panic.
 
 pub mod ffi;
-pub mod json;
+pub use win_common::json;
 pub mod parsers;
 pub mod platform;
 

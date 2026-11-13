@@ -76,7 +76,7 @@ Bitrate (`bitrate_bps`) is the overall file bitrate — total bits ÷ duration �
 
 ## Building
 
-Rust 1.80+, zero dependencies:
+Rust 1.80+, zero external dependencies:
 
 ```
 cargo build --release
