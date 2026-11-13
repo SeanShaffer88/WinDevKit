@@ -75,16 +75,76 @@ fn cs_class_is_always_public() {
 }
 
 #[test]
+fn golden_cs_scalars() {
+    let header = parse_header(&fixture("scalars.h")).unwrap();
+    let out = bridgekit::gen_cs::generate(&header, "scalars.h", "scalars_kit.dll").unwrap();
+    assert_eq!(out, golden("scalars.cs"));
+}
+
+#[test]
+fn golden_rs_scalars() {
+    let header = parse_header(&fixture("scalars.h")).unwrap();
+    let out = bridgekit::gen_rs::generate(&header, "scalars.h").unwrap();
+    assert_eq!(out, golden("scalars.rs"));
+}
+
+#[test]
+fn scalars_fixture_parses_to_the_expected_shape() {
+    let h = parse_header(&fixture("scalars.h")).unwrap();
+    assert_eq!(h.functions.len(), 9);
+    assert_eq!(h.callbacks.len(), 2);
+    assert_eq!(h.structs.len(), 1);
+    assert_eq!(h.structs[0].fields.len(), 3);
+}
+
+#[test]
+fn every_shipped_kit_header_parses_and_generates() {
+    // In the monorepo, every sibling kit's shipped header must parse
+    // and generate in both languages - that is the collection-wide
+    // claim the README makes. Standalone checkouts skip this test.
+    let kits_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("..");
+    if !kits_dir.join("SettingsKit").is_dir() {
+        return;
+    }
+    let mut checked = 0;
+    for entry in std::fs::read_dir(&kits_dir).unwrap() {
+        let dir = entry.unwrap().path();
+        let include = dir.join("include");
+        if !include.is_dir() {
+            continue;
+        }
+        for header_path in std::fs::read_dir(&include).unwrap() {
+            let header_path = header_path.unwrap().path();
+            if header_path.extension().is_none_or(|e| e != "h") {
+                continue;
+            }
+            let text = std::fs::read_to_string(&header_path).unwrap();
+            let header = parse_header(&text)
+                .unwrap_or_else(|e| panic!("{:?} must parse: {}", header_path, e));
+            bridgekit::gen_cs::generate(&header, "kit.h", "kit.dll")
+                .unwrap_or_else(|e| panic!("{:?} must generate C#: {}", header_path, e));
+            bridgekit::gen_rs::generate(&header, "kit.h")
+                .unwrap_or_else(|e| panic!("{:?} must generate Rust: {}", header_path, e));
+            checked += 1;
+        }
+    }
+    assert!(
+        checked >= 30,
+        "expected the whole collection, got {checked}"
+    );
+}
+
+#[test]
 fn unknown_type_is_a_hard_error_naming_the_token() {
     let err = parse_header(&fixture("badtype.h")).unwrap_err();
-    assert!(err.contains("'float'"), "error was: {err}");
+    assert!(err.contains("'wchar_t'"), "error was: {err}");
     assert!(err.contains("bk_scale"), "error was: {err}");
 
-    let err = parse_header("BK_API double bk_measure(BkThing *t);").unwrap_err();
-    assert!(err.contains("'double'"), "error was: {err}");
+    let err = parse_header("BK_API intptr_t bk_measure(BkThing *t);").unwrap_err();
+    assert!(err.contains("'intptr_t'"), "error was: {err}");
 
-    let err = parse_header("BK_API int bk_set(size_t count);").unwrap_err();
-    assert!(err.contains("'size_t'"), "error was: {err}");
+    let err = parse_header("BK_API int bk_set(long double count);").unwrap_err();
+    assert!(err.contains("'long'"), "error was: {err}");
 }
 
 #[test]
