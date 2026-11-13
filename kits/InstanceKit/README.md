@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-One single-instance helper for every app, behind a tiny zero-dependency DLL: the first copy of your app to call `in_acquire` becomes the primary and runs; every later copy learns it is a secondary, hands the primary its arguments over a named pipe (with an acknowledgement, so "forwarded" never means "probably"), and can exit. No more per-app mutex tricks, per-app pipe protocols, or second copies opening a second window on the same document.
+One single-instance helper for every app, behind a tiny zero-external-dependency DLL: the first copy of your app to call `in_acquire` becomes the primary and runs; every later copy learns it is a secondary, hands the primary its arguments over a named pipe (with an acknowledgement, so "forwarded" never means "probably"), and can exit. No more per-app mutex tricks, per-app pipe protocols, or second copies opening a second window on the same document.
 
 ```c
 #include "instancekit.h"

@@ -19,7 +19,7 @@
 //! reader and CRC-32 below are hand-written in this file.
 
 pub mod ffi;
-pub mod json;
+pub use win_common::json;
 pub mod platform;
 
 use std::collections::{BTreeMap, HashMap};

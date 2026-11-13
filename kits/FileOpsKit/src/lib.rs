@@ -7,7 +7,7 @@
 //! host's native paths carried as UTF-8 strings in JSON.
 
 pub mod ffi;
-pub mod json;
+pub use win_common::json;
 pub mod platform;
 
 pub const VERSION: &str = "0.1.0";

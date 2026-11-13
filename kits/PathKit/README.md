@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-A small, zero-dependency DLL that handles the fiddly parts of Windows path strings for you: it tidies a path into a consistent form, tells you in plain words what is wrong with a path Windows would refuse, works out joined and relative paths, and converts long paths to the extended `\\?\` form that bypasses the old 260-character limit. It only works on the text of a path — it never opens a file.
+A small, zero-external-dependency DLL that handles the fiddly parts of Windows path strings for you: it tidies a path into a consistent form, tells you in plain words what is wrong with a path Windows would refuse, works out joined and relative paths, and converts long paths to the extended `\\?\` form that bypasses the old 260-character limit. It only works on the text of a path — it never opens a file.
 
 ```c
 #include "pathkit.h"

@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-One clean C ABI for launching and supervising child processes — the thing every app used to hand-roll, with orphaned and hung children handled ad hoc. Describe a run in one JSON object, get one JSON result: captured stdout/stderr that can never deadlock the child on a full pipe, a timeout that actually kills, tree-kill backed by a Windows Job Object (so a child cannot outlive its supervisor), and elevation rules stated up front instead of silently dropped. Zero dependencies, one small DLL.
+One clean C ABI for launching and supervising child processes — the thing every app used to hand-roll, with orphaned and hung children handled ad hoc. Describe a run in one JSON object, get one JSON result: captured stdout/stderr that can never deadlock the child on a full pipe, a timeout that actually kills, tree-kill backed by a Windows Job Object (so a child cannot outlive its supervisor), and elevation rules stated up front instead of silently dropped. Zero external dependencies, one small DLL.
 
 ```c
 char *result;
@@ -96,7 +96,7 @@ Handles are thread-safe; supervision is serialized inside the library.
 
 ## Honest caveats — platform limitations
 
-- **Tree-kill is Windows-complete.** The Job Object kills the real tree. Off Windows there is no zero-dependency way to signal a process group (that needs libc), so kill/timeout/close terminate **the child only** — a grandchild the child spawned can survive, and if it inherited the capture pipes it can hold them open (see the next point). This is stated, not papered over.
+- **Tree-kill is Windows-complete.** The Job Object kills the real tree. Off Windows there is no zero-external-dependency way to signal a process group (that needs libc), so kill/timeout/close terminate **the child only** — a grandchild the child spawned can survive, and if it inherited the capture pipes it can hold them open (see the next point). This is stated, not papered over.
 - **Capture ends on a grace window, not on EOF alone.** After the child exits, output is drained for up to ~300 ms waiting for pipe EOF. A grandchild still holding a pipe open past that window means later output from it is not captured; the result is never held hostage by it.
 - **Captured output is lossy UTF-8.** A tool writing another encoding, or a multibyte character cut at the capture cap, shows U+FFFD replacement characters. Exit codes and states are unaffected.
 - **Exit code `-1` off Windows** means the process died by signal without a code (and was not killed through ProcessKit — those report state `killed` with a null code).

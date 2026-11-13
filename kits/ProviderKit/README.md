@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-One small, zero-dependency DLL that lets a program browse and read files the same way everywhere: a folder on a local disk, a network share, entries inside a ZIP or TAR archive, an in-memory store, or a custom backend you register yourself — all through URIs like `zip:///C:/data/a.zip!/docs/readme.txt` and the same five calls (`pv_list`, `pv_stat`, `pv_read_to_file`, `pv_read_text`, `pv_copy`).
+One small, zero-external-dependency DLL that lets a program browse and read files the same way everywhere: a folder on a local disk, a network share, entries inside a ZIP or TAR archive, an in-memory store, or a custom backend you register yourself — all through URIs like `zip:///C:/data/a.zip!/docs/readme.txt` and the same five calls (`pv_list`, `pv_stat`, `pv_read_to_file`, `pv_read_text`, `pv_copy`).
 
 ```c
 #include "providerkit.h"
@@ -32,7 +32,7 @@ int main(void) {
 - **A real TAR reader.** Plain uncompressed TAR with ustar headers, header checksums verified, list/stat/read fully supported.
 - **A plugin SDK.** Register a scheme with four C callbacks (list, stat, optional read_to_file, free_string) and it works through every `pv_*` operation, including cross-provider copies out of it. The exact callback contract is documented in `include/providerkit.h`.
 - **Distinct errors, plain messages.** Unknown scheme, malformed URI, not found, too large, CRC mismatch and "not supported" are different codes (`PV_ERR_*`), each with a thread-local `pv_last_error()` message.
-- **Zero dependencies.** Rust, hand-written ZIP/TAR/CRC-32/JSON code, no crates.
+- **Zero external dependencies.** Rust, hand-written ZIP/TAR/CRC-32/JSON code, no crates.
 
 ## The URI grammar
 

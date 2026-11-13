@@ -7,6 +7,6 @@
 - Numbering rank is sorted order of the ORIGINAL names, computed before any rule runs. Numbering in listing order was the bug this design exists to prevent.
 - There is NO regex rule and there must not be a fake one: `replace` is literal, the glob is `*`/`?` only. If regex is ever added it needs a real engine and a dependency justification.
 - Extension rules rename only; nothing in this kit reads or converts file contents (the apply stamps read metadata, never content).
-- The JSON engine (src/json.rs) is the family design — duplicate keys in one object are a PARSE ERROR by design; do not "fix" that into last-wins.
-- Zero dependencies; filesystem access is `std::fs` in src/platform.rs only. Windows name rules (illegal chars, reserved names, 255) are policy in `lib.rs::validate_name`, applied on every OS on purpose.
+- The JSON engine (win-common's json module) is the family design — duplicate keys in one object are a PARSE ERROR by design; do not "fix" that into last-wins.
+- Zero external dependencies (the one first-party dependency is win-common, the in-repo shared crate); filesystem access is `std::fs` in src/platform.rs only. Windows name rules (illegal chars, reserved names, 255) are policy in `lib.rs::validate_name`, applied on every OS on purpose.
 - Gate: WinDevKit tools/gate.sh (fmt + clippy both targets + full tests). Check/clippy do not link — CI's real Windows build is the link gate.

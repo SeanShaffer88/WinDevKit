@@ -37,7 +37,7 @@ int main(void) {
 - **Retries per item.** A failed item is retried up to `retries` extra times with `retry_delay_ms` between attempts; the result records the real attempt count. One bad item does not kill the job — unless the policy is `fail` — and the overall state becomes `completed_with_errors`.
 - **Undo that respects later edits.** Every run that changes anything writes an undo manifest and stages overwritten/deleted files. `fo_undo` reverses in reverse order: copies deleted, moves moved back, deletions and overwrites restored. If a copied file was edited after the run (size or modification time differs from the manifest), undo skips it and says so instead of deleting someone's newer work.
 - **Honest result JSON.** Every item ends `done`, `skipped`, `failed` or `cancelled`, with bytes and attempts — no silent partial state.
-- **Zero dependencies.** Hand-rolled JSON (duplicate keys in one object are a parse error, by design), plain `std::fs` engine, small C ABI.
+- **Zero external dependencies.** Hand-rolled JSON (duplicate keys in one object are a parse error, by design), plain `std::fs` engine, small C ABI.
 
 ## The API in one screen
 

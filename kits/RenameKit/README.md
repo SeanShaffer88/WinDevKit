@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-RenameKit renames a batch of files safely, behind one small zero-dependency DLL. You describe the batch once — a folder, the files (or a simple `*.txt`-style pattern), and a list of rename rules — and RenameKit shows you the exact plan first, checks every new name for problems and clashes, and only then renames. Renaming happens in two phases through temporary names, so even swapping two files' names works, and if anything fails halfway everything is put back. A successful rename hands you a log that can undo the whole batch later — unless a file has changed since, in which case the undo refuses that file and tells you why.
+RenameKit renames a batch of files safely, behind one small zero-external-dependency DLL. You describe the batch once — a folder, the files (or a simple `*.txt`-style pattern), and a list of rename rules — and RenameKit shows you the exact plan first, checks every new name for problems and clashes, and only then renames. Renaming happens in two phases through temporary names, so even swapping two files' names works, and if anything fails halfway everything is put back. A successful rename hands you a log that can undo the whole batch later — unless a file has changed since, in which case the undo refuses that file and tells you why.
 
 ```c
 #include "renamekit.h"
@@ -42,7 +42,7 @@ int main(void) {
 - **Two-phase apply.** Phase 1 moves every changing file to a unique temporary name in the same folder; phase 2 moves each temporary to its final name. Swaps (A↔B) and cycles are safe, and any failure rolls everything already done back before the log is returned.
 - **Rollback from the log alone.** A successful apply returns a log recording each rename plus the file's size and modification stamp after the apply. `rk_rollback` (given the whole log, or just its `rollback_token`) renames everything back — and refuses, per file, any file whose size or modification time no longer matches the log, because that file has changed since the rename and undoing would hide the change.
 - **Simple glob patterns.** `"pattern": "*.txt"` selects the folder's files with `*` (any run of characters) and `?` (exactly one character). That is the whole pattern language — there is deliberately no regular-expression rule; `replace` is a literal string replacement and is documented as such.
-- **Zero dependencies, one small C ABI.** Three JSON-in / JSON-out calls (`rk_preview`, `rk_apply`, `rk_rollback`) plus version / last-error / free-string helpers. All strings are UTF-8; every returned string is caller-owned and freed with `rk_free_string`.
+- **Zero external dependencies, one small C ABI.** Three JSON-in / JSON-out calls (`rk_preview`, `rk_apply`, `rk_rollback`) plus version / last-error / free-string helpers. All strings are UTF-8; every returned string is caller-owned and freed with `rk_free_string`.
 
 ## Building
 

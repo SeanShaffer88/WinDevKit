@@ -5,7 +5,7 @@
 
 pub mod engine;
 pub mod ffi;
-pub mod json;
+pub use win_common::json;
 pub mod platform;
 
 #[cfg(test)]

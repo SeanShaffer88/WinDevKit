@@ -1,6 +1,6 @@
 # ProviderKit — agent notes
 
-- Zero dependencies is a design rule: the ZIP reader, TAR reader, CRC-32 and JSON engine are hand-written in `src/lib.rs` / `src/json.rs`. Do not add a dependency without a written justification.
+- Zero external dependencies is a design rule (the one first-party exception is win-common, the in-repo shared crate): the ZIP reader, TAR reader and CRC-32 are hand-written in `src/lib.rs`; the JSON engine is win-common's. Do not add an external dependency without a written justification.
 - DEFLATE honesty is contractual: v0.1 lists/stats DEFLATE entries but reading one returns `PV_ERR_NOT_SUPPORTED` saying decompression is not built in. Never fake a read (no returning compressed bytes as content, no silent empty file).
 - The plugin string contract is load-bearing: provider list/stat return provider-allocated strings; the library copies, then calls the provider's `free_string` exactly once — including on invalid UTF-8. Do not switch to library-allocator ownership without changing the header, the README example and both registration tests together.
 - Inner paths (`zip`/`tar`/`mem`) are normalized by `normalize_inner` and `..` is rejected. Archive entry names are untrusted input: entries whose names fail normalization are unaddressable and skipped in listings.

@@ -9,6 +9,6 @@
 - Cancellation is queued-only by design: a running provider is arbitrary host code and cannot be interrupted safely. Do not add a path that claims to cancel running work.
 - Providers run WITHOUT the pipeline lock held and possibly in parallel; generation happens to a per-request temp file outside the cache lock, and only publish/sidecar/eviction take `cache_lock`. Holding `inner` or `cache_lock` across a provider call serializes the pool and can deadlock a provider that calls back into status APIs.
 - `th_close` cancels queued work and JOINS all workers. A close that detaches breaks the no-leaked-threads guarantee.
-- The JSON engine (src/json.rs) is the family design — duplicate keys in one object are a PARSE ERROR by design; do not "fix" that into last-wins.
-- Zero dependencies; SHA-256 is hand-rolled in src/sha256.rs for cache keys only — it is not used for any security decision.
+- The JSON engine (win-common's json module) is the family design — duplicate keys in one object are a PARSE ERROR by design; do not "fix" that into last-wins.
+- Zero external dependencies (the one first-party dependency is win-common, the in-repo shared crate); SHA-256 is win-common's, used for cache keys only — it is not used for any security decision.
 - Gate: WinDevKit tools/gate.sh (fmt + clippy both targets + full tests). Check/clippy do not link — CI's real Windows build is the link gate.
