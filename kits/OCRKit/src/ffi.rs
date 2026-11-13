@@ -269,7 +269,7 @@ mod tests {
         assert!(!ok_version().is_null());
         assert_eq!(ok_version_major(), 0);
         assert_eq!(ok_version_minor(), 1);
-        assert_eq!(ok_version_patch(), 0);
+        assert_eq!(ok_version_patch(), 2);
 
         // Null args -> INVALID_ARG, no handle.
         assert_eq!(ok_engine_create(ptr::null(), cs("eng").as_ptr()), 0);
