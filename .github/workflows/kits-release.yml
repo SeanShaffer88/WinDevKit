@@ -1,9 +1,16 @@
 # Monorepo release workflow for the kit collection under kits/.
 #
-# One workflow releases any single kit. Two ways to run it:
+# One workflow releases any single kit. Three ways to run it:
 #   - Push a tag named <Kit>-v<Version> (e.g. WatchKit-v0.2.1).
 #   - Run it manually (workflow_dispatch), picking the kit and the
 #     version; the release and its tag are created at current main.
+#   - Run it manually with kit = ALL: the release-all job releases
+#     every kit whose <Kit>-v<Version> tag (at the kit's own
+#     Cargo.toml version) does not exist yet, in one dispatch —
+#     the version input is ignored in that mode. Kits already
+#     released are skipped, so re-running ALL is safe. This exists
+#     because releasing the collection one kit at a time never
+#     happened in practice (docs/PAIN_POINTS.md #51).
 # It builds the kit on Windows (static CRT via the kit's own
 # .cargo/config.toml), packages the same zip the kit's standalone
 # release shipped — <Kit>-<Version>-x64.zip holding the DLL, its
@@ -28,6 +35,7 @@ on:
         type: choice
         required: true
         options:
+          - ALL
           - ArchiveKit
           - BridgeKit
           - ClipKit
@@ -63,13 +71,15 @@ on:
           - VaultKit
           - WatchKit
       version:
-        description: "Version, e.g. v0.2.1"
+        description: "Version, e.g. v0.2.1 (ignored when kit is ALL)"
         type: string
         required: true
+        default: v0.0.0
 permissions:
   contents: write
 jobs:
   release:
+    if: github.event_name == 'push' || inputs.kit != 'ALL'
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -183,6 +193,139 @@ jobs:
           $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
           "$hash  $env:KIT-$env:VER-x64.zip" | Out-File -Encoding ascii "$env:GITHUB_WORKSPACE/dist/SHA256SUMS.txt"
       - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          target_commitish: ${{ env.KIT_RELEASE_SHA }}
+          files: |
+            dist/*.zip
+            dist/SHA256SUMS.txt
+  release-all:
+    if: github.event_name == 'workflow_dispatch' && inputs.kit == 'ALL'
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 8
+      matrix:
+        kit:
+          - ArchiveKit
+          - BridgeKit
+          - ClipKit
+          - CrashKit
+          - DiagKit
+          - EmbedKit
+          - FileMetaKit
+          - FileOpsKit
+          - FixtureKit
+          - ImageKit
+          - InstanceKit
+          - JobKit
+          - LinkKit
+          - LogKit
+          - MediaKit
+          - NetKit
+          - NotifyKit
+          - OCRKit
+          - PDFKit
+          - PathKit
+          - ProcessKit
+          - ProviderKit
+          - RegKit
+          - RenameKit
+          - SettingsKit
+          - ShellInteropKit
+          - ShellKit
+          - SignKit
+          - ThumbKit
+          - TimeKit
+          - UiProbeKit
+          - UpdateKit
+          - VaultKit
+          - WatchKit
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve kit (version from Cargo.toml; skip if released)
+        id: resolve
+        shell: pwsh
+        env:
+          KIT: ${{ matrix.kit }}
+          KIT_RELEASE_SHA: ${{ github.sha }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $dir = "kits/$env:KIT"
+          $cargo = Get-Content "$dir/Cargo.toml" -Raw
+          $m = [regex]::Match($cargo, '(?ms)^\[package\]\s.*?^version\s*=\s*"([^"]+)"')
+          if (-not $m.Success) { throw "no [package] version in $dir/Cargo.toml" }
+          $ver = $m.Groups[1].Value
+          $tag = "$env:KIT-v$ver"
+          "KIT=$env:KIT" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "VER=$ver" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "TAG=$tag" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "KIT_RELEASE_SHA=$env:KIT_RELEASE_SHA" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          $existing = git ls-remote --tags origin "refs/tags/$tag"
+          if ($existing) {
+            Write-Host "skip: $tag already released"
+            "skip=true" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            exit 0
+          }
+          # Binary + header names are derived from the kit itself,
+          # verified 2026-11-12 to match the single-kit table for
+          # every kit: the [lib] name (or the package name with
+          # dashes as underscores) is the DLL name, the one header
+          # in include/ is the shipped header, and BridgeKit's
+          # [[bin]] name is its exe.
+          $libName = ([regex]::Match($cargo, '(?ms)^\[lib\]\s.*?^name\s*=\s*"([^"]+)"')).Groups[1].Value
+          if (-not $libName) {
+            $pkg = ([regex]::Match($cargo, '(?ms)^\[package\]\s.*?^name\s*=\s*"([^"]+)"')).Groups[1].Value
+            $libName = $pkg -replace '-', '_'
+          }
+          "KIT_LIB=$libName" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          $binName = ([regex]::Match($cargo, '(?ms)^\[\[bin\]\]\s.*?^name\s*=\s*"([^"]+)"')).Groups[1].Value
+          if ($binName) {
+            "EXE=$binName" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          } else {
+            $headers = Get-ChildItem "$dir/include/*.h"
+            if ($headers.Count -ne 1) { throw "expected exactly one header in $dir/include" }
+            "HEADER=$($headers[0].Name)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          }
+      - name: Fetch pinned engine sources
+        if: steps.resolve.outputs.skip != 'true' && matrix.kit == 'OCRKit'
+        shell: pwsh
+        working-directory: kits/${{ matrix.kit }}
+        run: ./fetch.ps1
+      - name: Build release
+        if: steps.resolve.outputs.skip != 'true'
+        shell: pwsh
+        working-directory: kits/${{ matrix.kit }}
+        env:
+          MATRIX_KIT: ${{ matrix.kit }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $flags = @()
+          if ($env:MATRIX_KIT -eq 'EmbedKit') { $flags += @('--features', 'onnx') }
+          cargo build --release --locked @flags
+      - name: Package zip + SHA256SUMS.txt
+        if: steps.resolve.outputs.skip != 'true'
+        shell: pwsh
+        working-directory: kits/${{ matrix.kit }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $stage = "$env:GITHUB_WORKSPACE/dist/$env:KIT-$env:VER-x64"
+          New-Item -ItemType Directory -Force $stage | Out-Null
+          if ($env:EXE) {
+            Copy-Item "target/release/$env:EXE.exe" $stage
+          } else {
+            Copy-Item "target/release/$env:KIT_LIB.dll" $stage
+            Copy-Item "target/release/$env:KIT_LIB.dll.lib" $stage
+            Copy-Item "include/$env:HEADER" $stage
+          }
+          Copy-Item LICENSE $stage
+          Copy-Item README.md $stage
+          $zip = "$env:GITHUB_WORKSPACE/dist/$env:KIT-$env:VER-x64.zip"
+          Compress-Archive -Path "$stage/*" -DestinationPath $zip
+          $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLower()
+          "$hash  $env:KIT-$env:VER-x64.zip" | Out-File -Encoding ascii "$env:GITHUB_WORKSPACE/dist/SHA256SUMS.txt"
+      - uses: softprops/action-gh-release@v2
+        if: steps.resolve.outputs.skip != 'true'
         with:
           tag_name: ${{ env.TAG }}
           target_commitish: ${{ env.KIT_RELEASE_SHA }}
