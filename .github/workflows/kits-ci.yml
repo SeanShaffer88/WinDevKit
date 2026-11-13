@@ -20,11 +20,13 @@ on:
     branches: [main]
     paths:
       - 'kits/**'
+      - 'crates/**'
       - '.github/workflows/kits-ci.yml'
       - '.github/workflows/kits-release.yml'
   pull_request:
     paths:
       - 'kits/**'
+      - 'crates/**'
       - '.github/workflows/kits-ci.yml'
       - '.github/workflows/kits-release.yml'
   workflow_dispatch:
@@ -108,3 +110,19 @@ jobs:
       - name: Native independent interop
         if: matrix.post
         run: ${{ matrix.post }}
+
+  win-common:
+    name: win-common
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: crates/win-common
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo test --locked
+      - run: cargo build --release --locked
