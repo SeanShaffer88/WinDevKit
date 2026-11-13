@@ -44,9 +44,11 @@ jobs:
           - CrashKit
           - DiagKit
           - EmbedKit
+          - FastSearch
           - FileMetaKit
           - FileOpsKit
           - FixtureKit
+          - HardwareInfo
           - ImageKit
           - InstanceKit
           - JobKit
