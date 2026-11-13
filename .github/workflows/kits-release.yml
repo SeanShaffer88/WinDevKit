@@ -42,9 +42,11 @@ on:
           - CrashKit
           - DiagKit
           - EmbedKit
+          - FastSearch
           - FileMetaKit
           - FileOpsKit
           - FixtureKit
+          - HardwareInfo
           - ImageKit
           - InstanceKit
           - JobKit
@@ -109,9 +111,12 @@ jobs:
             CrashKit       = @{ lib = "crashkit";          header = "crashkit.h" }
             DiagKit        = @{ lib = "diag_kit";          header = "diagkit.h" }
             EmbedKit       = @{ lib = "embedkit";          header = "embedkit.h" }
+            FastSearch     = @{ lib = "fast_search";       header = "fastsearch.h" }
             FileMetaKit    = @{ lib = "file_meta_kit";     header = "filemetakit.h" }
             FileOpsKit     = @{ lib = "file_ops_kit";      header = "fileopskit.h" }
             FixtureKit     = @{ lib = "fixture_kit";       header = "fixturekit.h" }
+
+            HardwareInfo   = @{ lib = "hardwareinfo";      header = "hardwareinfo.h" }
             ImageKit       = @{ lib = "imagekit";          header = "imagekit.h" }
             InstanceKit    = @{ lib = "instance_kit";      header = "instancekit.h" }
             JobKit         = @{ lib = "job_kit";           header = "jobkit.h" }
@@ -213,9 +218,11 @@ jobs:
           - CrashKit
           - DiagKit
           - EmbedKit
+          - FastSearch
           - FileMetaKit
           - FileOpsKit
           - FixtureKit
+          - HardwareInfo
           - ImageKit
           - InstanceKit
           - JobKit
