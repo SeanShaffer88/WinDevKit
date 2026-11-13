@@ -36,7 +36,7 @@
 
 pub mod ffi;
 pub mod hash;
-pub mod json;
+pub use win_common::json;
 pub mod platform;
 pub mod zip;
 

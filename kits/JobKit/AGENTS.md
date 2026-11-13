@@ -6,6 +6,6 @@
 - Progress samples are recorded on progress (done changed), by design: zero-progress checkpoints must not decay the EWMA. Stalls show through the overall-average half of the blend. Don't "improve" the rate by sampling on every checkpoint.
 - Callbacks run WITHOUT the job lock held (they call back into report/checkpoint/fail). Acquiring `inner` around the callback invocation in `run_steps` deadlocks the job instantly. The callback + user_data are copied out under the lock; the call happens after it drops.
 - `jk_close` cancels and JOINS. That guarantee is the orphan-thread story of this DLL; a close that detaches "for responsiveness" silently breaks it.
-- The JSON engine (src/json.rs) is the family design — duplicate keys in one object are a PARSE ERROR by design; do not "fix" that into last-wins.
-- Zero dependencies; the only platform surface is the monotonic clock in src/platform.rs (std::time, no OS APIs, no #[link] blocks needed anywhere in this crate).
+- The JSON engine (win-common's json module) is the family design — duplicate keys in one object are a PARSE ERROR by design; do not "fix" that into last-wins.
+- Zero external dependencies (the one first-party dependency is win-common, the in-repo shared crate); the only platform surface is the monotonic clock in src/platform.rs (std::time, no OS APIs, no #[link] blocks needed anywhere in this crate).
 - Gate: WinDevKit tools/gate.sh (fmt + clippy both targets + full tests). Check/clippy do not link — CI's real Windows build is the link gate.

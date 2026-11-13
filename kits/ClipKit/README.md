@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-One tiny zero-dependency DLL for the two clipboard jobs every Windows app ends up hand-rolling: read or set the clipboard's text, read the list of files it holds, and — the part everyone gets wrong — notice when the clipboard *changes* without gluing a hidden window and a message loop into your app. Windows keeps a counter that bumps on every clipboard change; ClipKit hands you that counter and can block until it moves, so "watch the clipboard" becomes one call instead of a Win32 ceremony.
+One tiny zero-external-dependency DLL for the two clipboard jobs every Windows app ends up hand-rolling: read or set the clipboard's text, read the list of files it holds, and — the part everyone gets wrong — notice when the clipboard *changes* without gluing a hidden window and a message loop into your app. Windows keeps a counter that bumps on every clipboard change; ClipKit hands you that counter and can block until it moves, so "watch the clipboard" becomes one call instead of a Win32 ceremony.
 
 ```c
 #include "clipkit.h"

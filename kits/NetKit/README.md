@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-One clean C ABI for HTTP(S) — the hardened transport every app in the family used to hand-roll over WinHTTP, deciding the same policy questions each time and not always safely. Describe a request in one JSON object, get one JSON result: redirects followed under strict rules, retries only where they are safe, a size cap enforced mid-stream, and downloads that land atomically with their SHA-256 verified. Zero dependencies, one small DLL.
+One clean C ABI for HTTP(S) — the hardened transport every app in the family used to hand-roll over WinHTTP, deciding the same policy questions each time and not always safely. Describe a request in one JSON object, get one JSON result: redirects followed under strict rules, retries only where they are safe, a size cap enforced mid-stream, and downloads that land atomically with their SHA-256 verified. Zero external dependencies, one small DLL.
 
 **There is no way to disable TLS certificate verification in NetKit.** No config key, no flag, no environment variable — HTTPS means the platform validates the certificate, always. If a use case seems to need otherwise, it needs a different tool, deliberately.
 
@@ -122,6 +122,6 @@ One JSON object in the caller's buffer:
 
 ## Building
 
-Zero dependencies; Win32 bindings are hand-declared in `src/platform.rs` with `#[link]` on every extern block. The gate is WinDevKit's `tools/gate.sh` (fmt, clippy on host **and** `x86_64-pc-windows-msvc`, full test suite) — green locally; CI additionally links and runs the loopback e2e on windows-latest.
+Zero external dependencies; Win32 bindings are hand-declared in `src/platform.rs` with `#[link]` on every extern block. The gate is WinDevKit's `tools/gate.sh` (fmt, clippy on host **and** `x86_64-pc-windows-msvc`, full test suite) — green locally; CI additionally links and runs the loopback e2e on windows-latest.
 
 MIT licensed.

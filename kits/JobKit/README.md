@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-One background-work engine for every app, behind a tiny zero-dependency DLL: define a job as weighted steps, run it on a worker thread the library owns, and get honest Progress %, rate, and ETA — with pause/resume and cooperative cancellation — from one status call. No more per-app progress math, per-app pause semantics, or threads that outlive the handle that was supposed to own them.
+One background-work engine for every app, behind a tiny zero-external-dependency DLL: define a job as weighted steps, run it on a worker thread the library owns, and get honest Progress %, rate, and ETA — with pause/resume and cooperative cancellation — from one status call. No more per-app progress math, per-app pause semantics, or threads that outlive the handle that was supposed to own them.
 
 ```c
 #include "jobkit.h"

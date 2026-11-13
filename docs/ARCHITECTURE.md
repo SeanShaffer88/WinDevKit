@@ -5,7 +5,7 @@
 - `kits/` — the 36-kit Windows DLL library. Every kit is a
   standalone Rust crate (its own `Cargo.toml`, `src/`, `include/`
   header, tests, README and LICENSE) exposing one small C ABI with
-  JSON in and out. Kits do not depend on each other.
+  JSON in and out. Kits do not depend on each other; they may share the first-party foundation crate `crates/win-common` (the family JSON engine, SHA-256 and FFI string helpers, maintained once — PAIN_POINTS #53).
 - `tools/` — the developer tools: the quality gate
   (`gate.sh` / `gate.ps1`, and `gate-kits.sh` for the whole
   collection), the hardened GitHub publisher (`publish.py`), the
@@ -27,7 +27,7 @@
   a named incident recorded in `docs/PAIN_POINTS.md`. New
   resources start with a pain-point entry, not just an idea.
 - **One canonical kit pattern.** Each kit follows the same shape:
-  zero-dependency Rust where feasible, a panic-proof C ABI, a
+  zero-external-dependency Rust where feasible, a panic-proof C ABI, a
   header in `include/`, the same gate steps, and the same release
   package (DLL + import lib + header + LICENSE + README).
 - **Gates before merges.** A kit change is gated by the canonical

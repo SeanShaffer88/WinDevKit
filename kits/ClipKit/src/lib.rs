@@ -41,7 +41,7 @@
 //! `src/platform.rs`; the C ABI is `src/ffi.rs`.
 
 pub mod ffi;
-pub mod json;
+pub use win_common::json;
 pub mod platform;
 
 pub const VERSION: &str = "0.1.0";

@@ -35,8 +35,9 @@
   digest check → atomic rename. Any failure removes the `.part`;
   a digest mismatch is NK_ERR_DIGEST and must never leave a file
   at the destination.
-- Zero dependencies; the JSON engine and SHA-256 are the family
-  hand-rolled modules. Duplicate keys in a config object are a
+- Zero external dependencies (the one first-party dependency is win-common, the in-repo shared crate); the JSON engine and SHA-256 are the family
+  hand-rolled modules, now maintained once in win-common
+  (crates/win-common). Duplicate keys in a config object are a
   PARSE ERROR by design — do not "fix" that into last-wins.
   (Response *headers* are last-wins in the result JSON; that is a
   different, documented contract.)

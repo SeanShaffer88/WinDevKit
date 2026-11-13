@@ -4,6 +4,23 @@ Notable changes to WinDevKit as a whole. Individual kits also keep
 their own release history; kit releases before 2026-11-01 were
 published from the standalone kit repositories (now archived).
 
+## 2026-11-13 — win-common: the shared modules live in one place
+
+- New first-party foundation crate `crates/win-common`: the family
+  JSON engine (parser, both serializer families, builders,
+  `json_escape`), SHA-256 (streaming + one-shot) and the FFI
+  wide-string helpers — the union of the per-kit copies, which had
+  drifted into 21 JSON variants (PAIN_POINTS #53).
+- 21 kits now take their JSON engine from win-common and 5 take
+  SHA-256 from it, behind unchanged C ABIs and unchanged kit
+  versions; every migrated kit passes the full local gate.
+- The rule is unchanged in spirit: zero *external* dependencies —
+  win-common is in-repo, first-party code. Kits still never depend
+  on each other. UpdateKit's JSON and FileMetaKit's parser keep
+  their own in-kit engines (different designs, documented in the
+  crate README), and the kits' private `wide()` helpers retire
+  kit-by-kit as their platform layers are next touched.
+
 ## 2026-11-12 — FastSearch and HardwareInfo join the monorepo
 
 - FastSearch (DLL #2) and HardwareInfo (DLL #16) are kits again:

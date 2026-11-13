@@ -30,9 +30,9 @@
 //! in the core.
 
 pub mod ffi;
-pub mod json;
+pub use win_common::json;
 pub mod platform;
-pub mod sha256;
+pub use win_common::sha256;
 
 use sha256::Sha256;
 use std::io::Write as _;

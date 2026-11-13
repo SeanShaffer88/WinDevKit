@@ -14,7 +14,7 @@
   runtime, so the DLLs do not need a separate VC++ runtime
   install. Release zips published earlier from the standalone kit
   repositories predate the static-CRT configuration.
-- **Dependencies:** kits are zero-dependency Rust where feasible.
+- **Dependencies:** kits are zero-external-dependency Rust where feasible (the in-repo win-common crate is the one shared first-party dependency).
   Two kits use native engines: OCRKit vendors its OCR stack
   (built from pinned sources at build time), and EmbedKit loads
   an ONNX Runtime library supplied by the user at runtime.

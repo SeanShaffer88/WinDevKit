@@ -2,7 +2,7 @@
 
 ## TL;DR
 
-One watcher for every app, behind a tiny zero-dependency DLL: point it at one or more folders and it tells you what changed — created, modified, deleted, renamed — as a short, tidy list instead of a flood. If a file changes ten times before you ask, you hear about it once, with a count of ten. Folder sizes and searches are remembered, and the moment anything underneath them changes, the memory is thrown away and rebuilt fresh. Nothing is ever lost quietly: if changes pile up faster than you collect them, the count of what was dropped is reported, not hidden.
+One watcher for every app, behind a tiny zero-external-dependency DLL: point it at one or more folders and it tells you what changed — created, modified, deleted, renamed — as a short, tidy list instead of a flood. If a file changes ten times before you ask, you hear about it once, with a count of ten. Folder sizes and searches are remembered, and the moment anything underneath them changes, the memory is thrown away and rebuilt fresh. Nothing is ever lost quietly: if changes pile up faster than you collect them, the count of what was dropped is reported, not hidden.
 
 ```c
 #include "watchkit.h"

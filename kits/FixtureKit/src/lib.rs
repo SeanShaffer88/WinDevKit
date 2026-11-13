@@ -8,9 +8,9 @@ pub mod crc32;
 pub mod ffi;
 pub mod generate;
 pub mod jpeg;
-pub mod json;
+pub use win_common::json;
 pub mod png;
-pub mod sha256;
+pub use win_common::sha256;
 pub mod zlib;
 
 pub const VERSION: &str = "0.1.0";

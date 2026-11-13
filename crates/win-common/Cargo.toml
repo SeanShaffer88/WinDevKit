@@ -1,0 +1,21 @@
+[package]
+name = "win-common"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.80"
+authors = ["Sean Shaffer"]
+description = "Shared foundation crate for the WinDevKit kits: the family JSON engine, SHA-256, and FFI string helpers — maintained once, in-repo"
+license = "MIT"
+repository = "https://github.com/SeanShaffer88/WinDevKit"
+keywords = ["windows", "ffi"]
+categories = ["os::windows-apis", "api-bindings"]
+
+[lib]
+name = "win_common"
+crate-type = ["rlib"]
+
+# Zero external dependencies. This crate exists so the kits can
+# share first-party code without any kit depending on another kit
+# (see docs/PAIN_POINTS.md #53). It is not a kit: it ships no DLL
+# and has no C ABI of its own.
+[dependencies]

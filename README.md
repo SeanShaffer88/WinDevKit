@@ -68,19 +68,19 @@ issues and downloads all live here.
 
 - [ArchiveKit](kits/ArchiveKit/) — Create, list, test and extract ZIP and TAR archives from any language that can call C — zero dependencies, DEFLATE codec built in. DLL #3 in the Windows DLL Collection
 - [BridgeKit](kits/BridgeKit/) — Verified C# and Rust binding generator for the DLL collection, generated from the kits' own headers. Zero-dependency Rust CLI tool.
-- [ClipKit](kits/ClipKit/) — Clipboard text and file-list access plus change detection, over a JSON C ABI. Zero-dependency Rust DLL.
+- [ClipKit](kits/ClipKit/) — Clipboard text and file-list access plus change detection, over a JSON C ABI. Zero-external-dependency Rust DLL.
 - [CrashKit](kits/CrashKit/) — DLL #10 of Sean's Windows library collection: crash capture (minidump + JSON sidecar) and structured logging behind a small C ABI (MIT)
-- [DiagKit](kits/DiagKit/) — One-call diagnostics bundles (logs, dumps, versions, hashes) in a single zip with a JSON manifest. Zero-dependency Rust DLL, JSON in/out over a C ABI.
+- [DiagKit](kits/DiagKit/) — One-call diagnostics bundles (logs, dumps, versions, hashes) in a single zip with a JSON manifest. Zero-external-dependency Rust DLL, JSON in/out over a C ABI.
 - [EmbedKit](kits/EmbedKit/) — Local semantic search behind one clean C ABI — text embeddings via runtime-loaded ONNX Runtime, cosine vector index built in. DLL #12 in the Windows DLL Collection.
 - [FastSearch](kits/FastSearch/) — Instant file search for Windows: build an index once, search it in milliseconds, from any language that can call C. DLL #2 in the Windows DLL Collection
 - [FileMetaKit](kits/FileMetaKit/) — File metadata toolkit behind a small C ABI: read, edit and compare metadata across images, audio, video and documents (WinDevKit DLL #30)
 - [FileOpsKit](kits/FileOpsKit/) — File operation engine behind a small C ABI: copy, move, rename and delete jobs with progress, cancellation, conflict policies, retries and undo (WinDevKit DLL #27)
-- [FixtureKit](kits/FixtureKit/) — Deterministic test-fixture file generator (images, audio, archives, corrupt variants). Zero-dependency Rust DLL, JSON in/out over a C ABI.
+- [FixtureKit](kits/FixtureKit/) — Deterministic test-fixture file generator (images, audio, archives, corrupt variants). Zero-external-dependency Rust DLL, JSON in/out over a C ABI.
 - [HardwareInfo](kits/HardwareInfo/) — Hardware inventory behind one clean C ABI — CPU, GPU, memory, disks, monitors, network, battery. DLL #16 in the Windows DLL Collection
 - [ImageKit](kits/ImageKit/) — Image decode, transform, and encode behind one clean C ABI — PNG/BMP in pure Rust
-- [InstanceKit](kits/InstanceKit/) — Single-instance mutex with named-pipe argument forwarding, over a JSON C ABI. Zero-dependency Rust DLL.
+- [InstanceKit](kits/InstanceKit/) — Single-instance mutex with named-pipe argument forwarding, over a JSON C ABI. Zero-external-dependency Rust DLL.
 - [JobKit](kits/JobKit/) — Background-work engine behind a small C ABI — progress %, ETA, pause/resume, cooperative cancellation (WinDevKit DLL #20)
-- [LinkKit](kits/LinkKit/) — Windows shortcut (.lnk) create, read and update including AppUserModelID, over a JSON C ABI. Zero-dependency Rust DLL.
+- [LinkKit](kits/LinkKit/) — Windows shortcut (.lnk) create, read and update including AppUserModelID, over a JSON C ABI. Zero-external-dependency Rust DLL.
 - [LogKit](kits/LogKit/) — Structured, rolling, crash-safe logging in one house format behind a small C ABI (WinDevKit DLL #18)
 - [MediaKit](kits/MediaKit/) — Pure-Rust media probing — duration, codecs and streams for WAV, MP3, FLAC, Ogg, MP4, Matroska and AVI (WinDevKit DLL #25)
 - [NetKit](kits/NetKit/) — Hardened HTTP(S) client behind a small C ABI — policy-checked redirects and retries, size caps, digest-verified downloads, no cert bypass
@@ -90,7 +90,7 @@ issues and downloads all live here.
 - [PathKit](kits/PathKit/) — Long-path and Unicode compatibility layer behind a small C ABI: path normalization, validation and conversion with plain-language errors (WinDevKit DLL #28)
 - [ProcessKit](kits/ProcessKit/) — Child-process launch and supervision behind a small C ABI — captured output, timeouts, job-object tree kill, elevation rules (WinDevKit DLL #19)
 - [ProviderKit](kits/ProviderKit/) — File provider adapter SDK behind a small C ABI: browse local disks, archives and custom providers through one interface (WinDevKit DLL #32)
-- [RegKit](kits/RegKit/) — Registry read, write and list with undo manifests, over a JSON C ABI. Zero-dependency Rust DLL.
+- [RegKit](kits/RegKit/) — Registry read, write and list with undo manifests, over a JSON C ABI. Zero-external-dependency Rust DLL.
 - [RenameKit](kits/RenameKit/) — Batch rename and transform engine behind a small C ABI: preview, validate and apply bulk renames with collision detection and rollback (WinDevKit DLL #31)
 - [SettingsKit](kits/SettingsKit/) — Atomic settings files with schema versioning and migrations behind a small C ABI (WinDevKit DLL #17)
 - [ShellInteropKit](kits/ShellInteropKit/) — Windows Shell interop wrapper behind a small C ABI: typed file info, icons, verbs and properties without raw shell boilerplate (WinDevKit DLL #34)
@@ -98,7 +98,7 @@ issues and downloads all live here.
 - [SignKit](kits/SignKit/) — Authenticode inspection and verification helpers for PE files — verify only, no signing (WinDevKit DLL #26)
 - [ThumbKit](kits/ThumbKit/) — Thumbnail and preview pipeline behind a small C ABI: pluggable generators, a bounded LRU cache and asynchronous retrieval (WinDevKit DLL #29)
 - [TimeKit](kits/TimeKit/) — DLL #11 of Sean's Windows library collection: IANA timezones and civil time done correctly (DST gap/overlap-safe) behind a small C ABI (MIT)
-- [UiProbeKit](kits/UiProbeKit/) — UI Automation inspection and actions (window and control trees, invoke, set value) over a JSON C ABI. Zero-dependency Rust DLL.
+- [UiProbeKit](kits/UiProbeKit/) — UI Automation inspection and actions (window and control trees, invoke, set value) over a JSON C ABI. Zero-external-dependency Rust DLL.
 - [UpdateKit](kits/UpdateKit/) — Self-update behind one clean C ABI — version-checked manifest, verified downloads, staged packages
 - [VaultKit](kits/VaultKit/) — DLL #9 of Sean's Windows library collection: secrets storage via DPAPI + Credential Manager behind a simple C ABI (MIT)
 - [WatchKit](kits/WatchKit/) — Folder change and cache coordinator behind a small C ABI: coalesced change events and self-invalidating folder caches (WinDevKit DLL #33)

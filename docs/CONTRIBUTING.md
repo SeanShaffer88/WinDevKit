@@ -23,7 +23,7 @@ projects.
   changed (or `tools/gate-kits.sh <KitName>` from the repo root)
   and include the result in the pull request. CI runs the same
   checks per kit and must be green.
-- **Kits keep the canonical shape:** zero-dependency Rust where
+- **Kits keep the canonical shape:** zero-external-dependency Rust where
   feasible, a panic-proof C ABI, the header in `include/`, tests
   in the crate, and the kit's own README kept accurate.
 - **Docs are factual.** READMEs, changelogs and release notes
