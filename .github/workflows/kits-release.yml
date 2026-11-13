@@ -296,13 +296,9 @@ jobs:
         if: steps.resolve.outputs.skip != 'true'
         shell: pwsh
         working-directory: kits/${{ matrix.kit }}
-        env:
-          MATRIX_KIT: ${{ matrix.kit }}
         run: |
           $ErrorActionPreference = 'Stop'
-          $flags = @()
-          if ($env:MATRIX_KIT -eq 'EmbedKit') { $flags += @('--features', 'onnx') }
-          cargo build --release --locked @flags
+          cargo build --release --locked
       - name: Package zip + SHA256SUMS.txt
         if: steps.resolve.outputs.skip != 'true'
         shell: pwsh
