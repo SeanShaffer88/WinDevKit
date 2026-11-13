@@ -15,10 +15,10 @@
 pub mod engine;
 pub mod ffi;
 
-pub const VERSION: &str = "0.1.0";
+pub const VERSION: &str = "0.1.2";
 pub const VERSION_MAJOR: u32 = 0;
 pub const VERSION_MINOR: u32 = 1;
-pub const VERSION_PATCH: u32 = 0;
+pub const VERSION_PATCH: u32 = 2;
 
 pub const OK: i32 = 0;
 pub const ERR_INVALID_ARG: i32 = 1;
