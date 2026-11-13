@@ -21,14 +21,14 @@ The DLL, its import library (`.dll.lib`) and the C header
 (`include/`) are what you consume; every kit's own README
 documents its functions.
 
-**Prebuilt** — kits were released as ready-to-use x64 zips
-(DLL + import lib + header + README + LICENSE) from their
-standalone repositories, which are now archived but whose
-releases remain downloadable; start from the catalog in
+**Prebuilt** — every kit is released as a ready-to-use x64 zip
+(DLL + import lib + header + README + LICENSE) from this
+repository's Releases; start from the catalog in
 [`CATALOG.md`](CATALOG.md), which links each kit's download.
-Future kit releases are published from this repository and
-additionally carry a `SHA256SUMS.txt` — verify your download
-against it.
+Every release carries a `SHA256SUMS.txt` — verify your download
+against it. (Kits were originally released from standalone
+repositories; those are gone, and this repository is now the only
+download source.)
 
 ## Use the tools
 
