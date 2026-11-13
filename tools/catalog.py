@@ -59,7 +59,7 @@ def download_url(kit: str, version: str) -> str:
     tag = f"{kit}-v{version}"
     return (
         f"https://github.com/{REPO}/releases/download/{tag}/"
-        f"{kit}-v{version}-x64.zip"
+        f"{kit}-{version}-x64.zip"
     )
 
 

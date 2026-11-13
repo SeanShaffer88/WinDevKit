@@ -20,7 +20,7 @@ so you can compare the two calling styles.
   caller-owned string rule by hand.
 
 You need `settings_kit.dll` next to the program in both cases:
-download `SettingsKit-v0.1.0-x64.zip` from this repository's
+download `SettingsKit-0.1.0-x64.zip` from this repository's
 [Releases](https://github.com/SeanShaffer88/WinDevKit/releases),
 check it against the release's `SHA256SUMS.txt`, and unzip.
 

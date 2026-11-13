@@ -48,7 +48,7 @@ class CatalogDataTests(unittest.TestCase):
         self.assertEqual(
             url,
             "https://github.com/SeanShaffer88/WinDevKit/releases/download/"
-            "SettingsKit-v0.1.0/SettingsKit-v0.1.0-x64.zip",
+            "SettingsKit-v0.1.0/SettingsKit-0.1.0-x64.zip",
         )
 
     def test_rendered_catalog_covers_every_kit(self):
