@@ -17,6 +17,10 @@
   bindings generate for all 33 headers and compile in C# and Rust.
 - Runnable examples (`examples/`): SettingsKit from C# (BridgeKit-
   generated binding) and from Python (ctypes).
+- FastSearch and HardwareInfo folded into the monorepo
+  (2026-11-12): the two family members whose standalone
+  repositories were deleted are kits again — the collection
+  stands at 36 kits, all released from this repository.
 - The monorepo merge (2026-11-01): one repository, one CI gate
   (`kits-ci`, 34/34 green), one release workflow (`kits-release`),
   static-CRT builds for every kit.
@@ -30,9 +34,12 @@
 
 ## Next
 
-- Field smoke re-runs for the remaining kits' static-CRT builds,
-  as each kit is re-released from the monorepo (the 2026-10-28
-  field pass covered the earlier dynamic-CRT builds).
+- A shared `win-common` crate for the Win32 interop boilerplate
+  several kits currently carry individually.
+- Runnable examples for every kit, plus a generated-bindings pack
+  (BridgeKit output for all headers) published as a release asset.
+- A VM verification kit: reusable clean-machine verification for
+  Windows projects.
 
 ## Open, from the original roadmap
 
@@ -41,7 +48,8 @@
 - A VM verification kit: reusable clean-machine verification for
   Windows projects.
 - A packaging kit: one-command packaging built on the release
-  template.
+  template. (Superseded outside this repo: the suite's packaging
+  now lives in SeanPak.)
 
 Roadmap items are intent, not commitments; priorities follow the
 pain points in [`PAIN_POINTS.md`](PAIN_POINTS.md).

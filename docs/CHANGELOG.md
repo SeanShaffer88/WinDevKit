@@ -4,6 +4,16 @@ Notable changes to WinDevKit as a whole. Individual kits also keep
 their own release history; kit releases before 2026-11-01 were
 published from the standalone kit repositories (now archived).
 
+## 2026-11-12 — FastSearch and HardwareInfo join the monorepo
+
+- FastSearch (DLL #2) and HardwareInfo (DLL #16) are kits again:
+  their standalone repositories were deleted after the merge and
+  the catalog listed them as unpublished; their sources are now
+  in `kits/FastSearch/` and `kits/HardwareInfo/`, gated by
+  `kits-ci` and released from this repository like every other
+  kit. The collection stands at 36 kits, and the catalog's
+  "not currently published" section is gone.
+
 ## 2026-11-12 — Collection re-released here; catalog made self-checking; BridgeKit grammar completed
 
 - The standalone kit repositories the catalog linked to were

@@ -1,1 +1,222 @@
-{"external":[{"blurb":"Converts between Markdown, HTML, CSV, JSON and plain text","download":"https://github.com/SeanShaffer88/DocConvert/releases/download/v0.1.0/DocConvert-v0.1.0-x64.zip","name":"DocConvert","repo":"https://github.com/SeanShaffer88/DocConvert","version":"0.1.0"},{"blurb":"A drop-in sqlite3.dll with everything switched on (FTS5, math, JSON) plus the sqlite-vec extension","download":"https://github.com/SeanShaffer88/SQLiteSuperBuild/releases/tag/v0.1.0","name":"SQLiteSuperBuild","repo":"https://github.com/SeanShaffer88/SQLiteSuperBuild","version":"0.1.0"},{"blurb":"Offline speech-to-text with the engine built into the DLL","download":"https://github.com/SeanShaffer88/Whisper/releases/download/v0.1.0/Whisper-v0.1.0-x64.zip","name":"Whisper","repo":"https://github.com/SeanShaffer88/Whisper","version":"0.1.0"},{"blurb":"Windows recovery primitives: restore points and recycle bin information","download":"https://github.com/SeanShaffer88/WinRecovery/releases/download/v0.1.0/WinRecovery-v0.1.0-x64.zip","name":"WinRecovery","repo":"https://github.com/SeanShaffer88/WinRecovery","version":"0.1.0"},{"blurb":"Window polish: dark title bars, DPI scaling and Windows version information","download":"https://github.com/SeanShaffer88/WinUIHelpers/releases/download/v0.1.0/WinUIHelpers-v0.1.0-x64.zip","name":"WinUIHelpers","repo":"https://github.com/SeanShaffer88/WinUIHelpers","version":"0.1.0"}],"groups":[{"kits":[{"blurb":"Copy, move, rename and delete batches of files as one job, with progress, cancellation, conflict policies, retries and undo","name":"FileOpsKit"},{"blurb":"Joins, splits, normalizes and converts Windows paths (including extended-length paths), with plain-language errors","name":"PathKit"},{"blurb":"Batch file renaming with a preview, collision detection and rollback before anything changes","name":"RenameKit"},{"blurb":"Watches folders and reports created, changed and deleted files, with coalesced events and a self-invalidating folder cache","name":"WatchKit"},{"blurb":"Browses and reads files the same way from local disks, archives and custom providers through one interface","name":"ProviderKit"},{"blurb":"Reads what is known about a file: image size, audio tags, video and document facts","name":"FileMetaKit"},{"blurb":"One thumbnail pipeline for every file type, with a bounded cache and built-in PNG and JPEG decoding","name":"ThumbKit"}],"title":"Files and folders"},{"kits":[{"blurb":"Creates, lists, tests and extracts ZIP and TAR archives, with a built-in DEFLATE codec","name":"ArchiveKit"},{"blurb":"Parses PDFs, extracts text page by page, and generates valid multi-page PDFs of its own","name":"PDFKit"}],"title":"Archives and documents"},{"kits":[{"blurb":"Answers \"what is this media file?\": duration, codecs, dimensions and channels for WAV, MP3, FLAC, Ogg, MP4, Matroska and AVI","name":"MediaKit"},{"blurb":"Loads, resizes, transforms and saves images (PNG and BMP) in pure Rust","name":"ImageKit"},{"blurb":"Offline text recognition (OCR) with the Tesseract engine built in; image in, text plus confidence out","name":"OCRKit","note":"The OCR engine is vendored C/C++, built from pinned sources at build time."},{"blurb":"Local semantic search: text embeddings and a cosine vector index, fully offline","name":"EmbedKit","note":"Needs an ONNX Runtime library supplied by the user at runtime."}],"title":"Media and AI"},{"kits":[{"blurb":"Explorer integration the safe way: context-menu verbs, file associations, protocol handlers and jump lists, as plan + apply with backup","name":"ShellKit"},{"blurb":"Shell file information, type names, associations, verbs and properties without raw shell boilerplate","name":"ShellInteropKit"},{"blurb":"Inspects program files: PE details, the Authenticode hash, and the Windows trust verdict (verify only, no signing)","name":"SignKit"},{"blurb":"Windows registry read, list, write and delete, with undo manifests that can reverse every change","name":"RegKit"},{"blurb":"Creates and reads Windows shortcut (.lnk) files and stamps AppUserModelIDs on them","name":"LinkKit"},{"blurb":"Clipboard text and file-list access, plus change detection","name":"ClipKit"},{"blurb":"Single-instance mutex with named-pipe argument forwarding to the running instance","name":"InstanceKit"}],"title":"Windows system and shell"},{"kits":[{"blurb":"Loads and saves JSON settings files atomically, with schema versioning and migrations, and never writes defaults","name":"SettingsKit"},{"blurb":"One structured, rolling, crash-safe log format for every app: one-line timestamped records","name":"LogKit"},{"blurb":"Launches and supervises child processes: captured output, timeouts, job-object tree kill, elevation rules","name":"ProcessKit"},{"blurb":"A background-work engine: weighted steps on a worker thread, with progress %, ETA, pause/resume and cancellation","name":"JobKit"},{"blurb":"HTTP and HTTPS requests over WinHTTP with hardened defaults: policy-checked redirects and retries, size caps, digest-verified downloads","name":"NetKit"},{"blurb":"Self-update pieces: version-checked manifests, verified downloads and staged packages","name":"UpdateKit"},{"blurb":"Stores secrets in Windows Credential Manager and DPAPI instead of plaintext files","name":"VaultKit"},{"blurb":"Captures a minidump and a JSON sidecar when a program crashes, plus structured logging","name":"CrashKit"},{"blurb":"Time zones and date handling done once, correctly: all canonical IANA zones, DST gap/overlap-safe","name":"TimeKit"},{"blurb":"Tray notifications and balloon alerts, real WinRT toasts, and a coalescing notification queue","name":"NotifyKit"}],"title":"App plumbing"},{"kits":[{"blurb":"Generates verified C# and Rust bindings from the collection's C headers, and verifies a built DLL's exports against its header (command-line tool, ships an .exe instead of a DLL)","name":"BridgeKit"},{"blurb":"One-call diagnostics bundles: logs, dumps, version info and file hashes in a single zip with a manifest","name":"DiagKit"},{"blurb":"Deterministic test fixtures: PNG, WAV, text, ZIP and TAR files with exact bytes, including corrupt variants","name":"FixtureKit"},{"blurb":"UI Automation inspection and actions: window and control trees, invoke, toggle, set value and focus","name":"UiProbeKit"}],"title":"For builders and testers"}],"intro":{"field_note":"Every kit in this repository was field-verified on a real Windows machine on 2026-10-28 (smoke pack plus manual demos, pre-monorepo builds). The monorepo builds below are CI-verified; their field re-checks are recorded per kit in docs/AUDIT.md as they happen (OCRKit's monorepo build was field-verified on 2026-11-01)."},"schema_version":1,"unpublished":[{"blurb":"Folder-tree indexer with in-memory search. Its standalone repository is no longer public, so it is not currently distributed; the source is retained by the maintainer.","name":"FastSearch"},{"blurb":"Hardware inventory (CPU, OS, memory, disks, GPUs). Its standalone repository is no longer public, so it is not currently distributed; the source is retained by the maintainer.","name":"HardwareInfo"}]}
+{
+ "external": [
+  {
+   "blurb": "Converts between Markdown, HTML, CSV, JSON and plain text",
+   "download": "https://github.com/SeanShaffer88/DocConvert/releases/download/v0.1.0/DocConvert-v0.1.0-x64.zip",
+   "name": "DocConvert",
+   "repo": "https://github.com/SeanShaffer88/DocConvert",
+   "version": "0.1.0"
+  },
+  {
+   "blurb": "A drop-in sqlite3.dll with everything switched on (FTS5, math, JSON) plus the sqlite-vec extension",
+   "download": "https://github.com/SeanShaffer88/SQLiteSuperBuild/releases/tag/v0.1.0",
+   "name": "SQLiteSuperBuild",
+   "repo": "https://github.com/SeanShaffer88/SQLiteSuperBuild",
+   "version": "0.1.0"
+  },
+  {
+   "blurb": "Offline speech-to-text with the engine built into the DLL",
+   "download": "https://github.com/SeanShaffer88/Whisper/releases/download/v0.1.0/Whisper-v0.1.0-x64.zip",
+   "name": "Whisper",
+   "repo": "https://github.com/SeanShaffer88/Whisper",
+   "version": "0.1.0"
+  },
+  {
+   "blurb": "Windows recovery primitives: restore points and recycle bin information",
+   "download": "https://github.com/SeanShaffer88/WinRecovery/releases/download/v0.1.0/WinRecovery-v0.1.0-x64.zip",
+   "name": "WinRecovery",
+   "repo": "https://github.com/SeanShaffer88/WinRecovery",
+   "version": "0.1.0"
+  },
+  {
+   "blurb": "Window polish: dark title bars, DPI scaling and Windows version information",
+   "download": "https://github.com/SeanShaffer88/WinUIHelpers/releases/download/v0.1.0/WinUIHelpers-v0.1.0-x64.zip",
+   "name": "WinUIHelpers",
+   "repo": "https://github.com/SeanShaffer88/WinUIHelpers",
+   "version": "0.1.0"
+  }
+ ],
+ "groups": [
+  {
+   "kits": [
+    {
+     "blurb": "Copy, move, rename and delete batches of files as one job, with progress, cancellation, conflict policies, retries and undo",
+     "name": "FileOpsKit"
+    },
+    {
+     "blurb": "Joins, splits, normalizes and converts Windows paths (including extended-length paths), with plain-language errors",
+     "name": "PathKit"
+    },
+    {
+     "blurb": "Batch file renaming with a preview, collision detection and rollback before anything changes",
+     "name": "RenameKit"
+    },
+    {
+     "blurb": "Watches folders and reports created, changed and deleted files, with coalesced events and a self-invalidating folder cache",
+     "name": "WatchKit"
+    },
+    {
+     "blurb": "Browses and reads files the same way from local disks, archives and custom providers through one interface",
+     "name": "ProviderKit"
+    },
+    {
+     "blurb": "Reads what is known about a file: image size, audio tags, video and document facts",
+     "name": "FileMetaKit"
+    },
+    {
+     "blurb": "One thumbnail pipeline for every file type, with a bounded cache and built-in PNG and JPEG decoding",
+     "name": "ThumbKit"
+    },
+    {
+     "name": "FastSearch",
+     "blurb": "Indexes a folder tree once, then answers file-name searches from the index in milliseconds"
+    }
+   ],
+   "title": "Files and folders"
+  },
+  {
+   "kits": [
+    {
+     "blurb": "Creates, lists, tests and extracts ZIP and TAR archives, with a built-in DEFLATE codec",
+     "name": "ArchiveKit"
+    },
+    {
+     "blurb": "Parses PDFs, extracts text page by page, and generates valid multi-page PDFs of its own",
+     "name": "PDFKit"
+    }
+   ],
+   "title": "Archives and documents"
+  },
+  {
+   "kits": [
+    {
+     "blurb": "Answers \"what is this media file?\": duration, codecs, dimensions and channels for WAV, MP3, FLAC, Ogg, MP4, Matroska and AVI",
+     "name": "MediaKit"
+    },
+    {
+     "blurb": "Loads, resizes, transforms and saves images (PNG and BMP) in pure Rust",
+     "name": "ImageKit"
+    },
+    {
+     "blurb": "Offline text recognition (OCR) with the Tesseract engine built in; image in, text plus confidence out",
+     "name": "OCRKit",
+     "note": "The OCR engine is vendored C/C++, built from pinned sources at build time."
+    },
+    {
+     "blurb": "Local semantic search: text embeddings and a cosine vector index, fully offline",
+     "name": "EmbedKit",
+     "note": "Needs an ONNX Runtime library supplied by the user at runtime."
+    }
+   ],
+   "title": "Media and AI"
+  },
+  {
+   "kits": [
+    {
+     "blurb": "Explorer integration the safe way: context-menu verbs, file associations, protocol handlers and jump lists, as plan + apply with backup",
+     "name": "ShellKit"
+    },
+    {
+     "blurb": "Shell file information, type names, associations, verbs and properties without raw shell boilerplate",
+     "name": "ShellInteropKit"
+    },
+    {
+     "blurb": "Inspects program files: PE details, the Authenticode hash, and the Windows trust verdict (verify only, no signing)",
+     "name": "SignKit"
+    },
+    {
+     "blurb": "Windows registry read, list, write and delete, with undo manifests that can reverse every change",
+     "name": "RegKit"
+    },
+    {
+     "blurb": "Creates and reads Windows shortcut (.lnk) files and stamps AppUserModelIDs on them",
+     "name": "LinkKit"
+    },
+    {
+     "blurb": "Clipboard text and file-list access, plus change detection",
+     "name": "ClipKit"
+    },
+    {
+     "blurb": "Single-instance mutex with named-pipe argument forwarding to the running instance",
+     "name": "InstanceKit"
+    },
+    {
+     "name": "HardwareInfo",
+     "blurb": "Hardware inventory as JSON: CPU, GPU, memory, disks, monitors, network adapters and battery"
+    }
+   ],
+   "title": "Windows system and shell"
+  },
+  {
+   "kits": [
+    {
+     "blurb": "Loads and saves JSON settings files atomically, with schema versioning and migrations, and never writes defaults",
+     "name": "SettingsKit"
+    },
+    {
+     "blurb": "One structured, rolling, crash-safe log format for every app: one-line timestamped records",
+     "name": "LogKit"
+    },
+    {
+     "blurb": "Launches and supervises child processes: captured output, timeouts, job-object tree kill, elevation rules",
+     "name": "ProcessKit"
+    },
+    {
+     "blurb": "A background-work engine: weighted steps on a worker thread, with progress %, ETA, pause/resume and cancellation",
+     "name": "JobKit"
+    },
+    {
+     "blurb": "HTTP and HTTPS requests over WinHTTP with hardened defaults: policy-checked redirects and retries, size caps, digest-verified downloads",
+     "name": "NetKit"
+    },
+    {
+     "blurb": "Self-update pieces: version-checked manifests, verified downloads and staged packages",
+     "name": "UpdateKit"
+    },
+    {
+     "blurb": "Stores secrets in Windows Credential Manager and DPAPI instead of plaintext files",
+     "name": "VaultKit"
+    },
+    {
+     "blurb": "Captures a minidump and a JSON sidecar when a program crashes, plus structured logging",
+     "name": "CrashKit"
+    },
+    {
+     "blurb": "Time zones and date handling done once, correctly: all canonical IANA zones, DST gap/overlap-safe",
+     "name": "TimeKit"
+    },
+    {
+     "blurb": "Tray notifications and balloon alerts, real WinRT toasts, and a coalescing notification queue",
+     "name": "NotifyKit"
+    }
+   ],
+   "title": "App plumbing"
+  },
+  {
+   "kits": [
+    {
+     "blurb": "Generates verified C# and Rust bindings from the collection's C headers, and verifies a built DLL's exports against its header (command-line tool, ships an .exe instead of a DLL)",
+     "name": "BridgeKit"
+    },
+    {
+     "blurb": "One-call diagnostics bundles: logs, dumps, version info and file hashes in a single zip with a manifest",
+     "name": "DiagKit"
+    },
+    {
+     "blurb": "Deterministic test fixtures: PNG, WAV, text, ZIP and TAR files with exact bytes, including corrupt variants",
+     "name": "FixtureKit"
+    },
+    {
+     "blurb": "UI Automation inspection and actions: window and control trees, invoke, toggle, set value and focus",
+     "name": "UiProbeKit"
+    }
+   ],
+   "title": "For builders and testers"
+  }
+ ],
+ "intro": {
+  "field_note": "Every kit in this repository was field-verified on a real Windows machine on 2026-10-28 (smoke pack plus manual demos, pre-monorepo builds). The monorepo builds below are CI-verified; their field re-checks are recorded per kit in docs/AUDIT.md as they happen (OCRKit's monorepo build was field-verified on 2026-11-01)."
+ },
+ "schema_version": 1,
+ "unpublished": []
+}

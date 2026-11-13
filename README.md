@@ -3,7 +3,7 @@
 ## TL;DR
 
 Shared development resources for Windows desktop software — plus a
-library of 34 small Rust DLLs that each do one common Windows job
+library of 36 small Rust DLLs that each do one common Windows job
 (settings, logging, folder watching, thumbnails, notifications,
 archives, OCR and more) behind one plain C interface with JSON in
 and out, so any language that can call C can use them. Everything
@@ -56,7 +56,7 @@ media probing, UI automation and more — are in the
 
 ## The kit library
 
-The 34 kits live in this repository, each in its own folder under
+The 36 kits live in this repository, each in its own folder under
 [`kits/`](kits/) with its source, header, tests and README. One CI
 workflow (`kits-ci`) gates every kit on every change; one release
 workflow (`kits-release`) publishes any kit — or the whole
@@ -72,9 +72,11 @@ issues and downloads all live here.
 - [CrashKit](kits/CrashKit/) — DLL #10 of Sean's Windows library collection: crash capture (minidump + JSON sidecar) and structured logging behind a small C ABI (MIT)
 - [DiagKit](kits/DiagKit/) — One-call diagnostics bundles (logs, dumps, versions, hashes) in a single zip with a JSON manifest. Zero-dependency Rust DLL, JSON in/out over a C ABI.
 - [EmbedKit](kits/EmbedKit/) — Local semantic search behind one clean C ABI — text embeddings via runtime-loaded ONNX Runtime, cosine vector index built in. DLL #12 in the Windows DLL Collection.
+- [FastSearch](kits/FastSearch/) — Instant file search for Windows: build an index once, search it in milliseconds, from any language that can call C. DLL #2 in the Windows DLL Collection
 - [FileMetaKit](kits/FileMetaKit/) — File metadata toolkit behind a small C ABI: read, edit and compare metadata across images, audio, video and documents (WinDevKit DLL #30)
 - [FileOpsKit](kits/FileOpsKit/) — File operation engine behind a small C ABI: copy, move, rename and delete jobs with progress, cancellation, conflict policies, retries and undo (WinDevKit DLL #27)
 - [FixtureKit](kits/FixtureKit/) — Deterministic test-fixture file generator (images, audio, archives, corrupt variants). Zero-dependency Rust DLL, JSON in/out over a C ABI.
+- [HardwareInfo](kits/HardwareInfo/) — Hardware inventory behind one clean C ABI — CPU, GPU, memory, disks, monitors, network, battery. DLL #16 in the Windows DLL Collection
 - [ImageKit](kits/ImageKit/) — Image decode, transform, and encode behind one clean C ABI — PNG/BMP in pure Rust
 - [InstanceKit](kits/InstanceKit/) — Single-instance mutex with named-pipe argument forwarding, over a JSON C ABI. Zero-dependency Rust DLL.
 - [JobKit](kits/JobKit/) — Background-work engine behind a small C ABI — progress %, ETA, pause/resume, cooperative cancellation (WinDevKit DLL #20)

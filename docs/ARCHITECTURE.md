@@ -2,7 +2,7 @@
 
 ## Repository layout
 
-- `kits/` — the 34-kit Windows DLL library. Every kit is a
+- `kits/` — the 36-kit Windows DLL library. Every kit is a
   standalone Rust crate (its own `Cargo.toml`, `src/`, `include/`
   header, tests, README and LICENSE) exposing one small C ABI with
   JSON in and out. Kits do not depend on each other.

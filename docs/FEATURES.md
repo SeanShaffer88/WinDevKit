@@ -40,7 +40,7 @@ licensed.
 
 ## The kit library (`kits/`)
 
-34 small Windows DLLs, each doing one common job behind a small
+36 small Windows DLLs, each doing one common job behind a small
 C ABI with JSON in and out — archives, thumbnails, notifications,
 settings, folder watching, OCR, shell integration, registry,
 updates, and more. Browse [`CATALOG.md`](CATALOG.md) for the full
