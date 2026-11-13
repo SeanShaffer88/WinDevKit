@@ -57,6 +57,33 @@ pub fn generate(header: &Header, header_name: &str, dll_name: &str) -> Result<St
     out.push_str("using System;\n");
     out.push_str("using System.Runtime.InteropServices;\n\n");
     out.push_str("namespace BridgeKit.Generated\n{\n");
+    for cb in &header.callbacks {
+        out.push_str("    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]\n");
+        out.push_str(&format!(
+            "    public delegate {} {}({});\n\n",
+            cs_return(&cb.ret),
+            cb.name,
+            cs_params(&cb.params)
+        ));
+    }
+    for st in &header.structs {
+        out.push_str("    [StructLayout(LayoutKind.Sequential)]\n");
+        out.push_str(&format!("    public struct {}\n    {{\n", st.name));
+        for field in &st.fields {
+            if let CType::Array(_, n) = &field.ty {
+                out.push_str(&format!(
+                    "        [MarshalAs(UnmanagedType.ByValArray, SizeConst = {})]\n",
+                    n
+                ));
+            }
+            out.push_str(&format!(
+                "        public {} {};\n",
+                cs_field(&field.ty),
+                cs_ident(&field.name)
+            ));
+        }
+        out.push_str("    }\n\n");
+    }
     out.push_str(&format!(
         "    public static partial class {}\n    {{\n",
         class
@@ -73,7 +100,7 @@ pub fn generate(header: &Header, header_name: &str, dll_name: &str) -> Result<St
             "        public static extern {} {}({});\n",
             cs_return(&f.ret),
             f.name,
-            cs_params(f)
+            cs_params(&f.params)
         ));
     }
 
@@ -100,10 +127,10 @@ fn wrapper(f: &Function, free_fn: Option<&str>) -> String {
         .params
         .iter()
         .map(|p| {
-            if matches!(p.ty, CType::CharPtrPtr | CType::HandlePtrPtr(_)) {
-                format!("out {}", p.name)
+            if cs_param(p).starts_with("out ") {
+                format!("out {}", cs_ident(&p.name))
             } else {
-                p.name.clone()
+                cs_ident(&p.name)
             }
         })
         .collect::<Vec<_>>()
@@ -121,7 +148,7 @@ fn wrapper(f: &Function, free_fn: Option<&str>) -> String {
     s.push_str(&format!(
         "        public static string {}_string({})\n        {{\n",
         f.name,
-        cs_params(f)
+        cs_params(&f.params)
     ));
     s.push_str(&format!(
         "            IntPtr ptr = {}({});\n",
@@ -144,36 +171,176 @@ fn wrapper(f: &Function, free_fn: Option<&str>) -> String {
     s
 }
 
-fn cs_return(ty: &CType) -> &'static str {
-    match ty {
+/// The plain C# type for a scalar (also used for struct fields and
+/// delegate signatures, where no out/pointer distinction applies).
+fn cs_scalar(ty: &CType) -> Option<&'static str> {
+    let s = match ty {
         CType::Void => "void",
         CType::Int => "int",
         CType::UInt | CType::U32 => "uint",
         CType::U64 => "ulong",
-        // All pointer returns stay IntPtr on the raw import; the
-        // _string wrappers provide the string view.
-        _ => "IntPtr",
-    }
+        CType::I64 => "long",
+        CType::U8 => "byte",
+        CType::SizeT => "nuint",
+        CType::F32 => "float",
+        CType::F64 => "double",
+        _ => return None,
+    };
+    Some(s)
 }
 
-fn cs_param(ty: &CType) -> String {
-    match ty {
-        CType::Void => "void".to_string(),
-        CType::Int => "int".to_string(),
-        CType::UInt | CType::U32 => "uint".to_string(),
-        CType::U64 => "ulong".to_string(),
+fn cs_return(ty: &CType) -> String {
+    if let Some(s) = cs_scalar(ty) {
+        return s.to_string();
+    }
+    // All pointer returns stay IntPtr on the raw import; the
+    // _string wrappers provide the string view.
+    "IntPtr".to_string()
+}
+
+fn cs_param(p: &crate::header::Param) -> String {
+    match &p.ty {
         CType::ConstCharPtr => "string".to_string(),
-        CType::CharPtrPtr | CType::HandlePtrPtr(_) => "out IntPtr".to_string(),
-        _ => "IntPtr".to_string(),
+        CType::CharPtrPtr | CType::HandlePtrPtr(_) | CType::ScalarPtrPtr(_) => {
+            "out IntPtr".to_string()
+        }
+        CType::ScalarPtr(inner) if p.is_out_param() => {
+            format!("out {}", cs_scalar(inner).unwrap_or("IntPtr"))
+        }
+        CType::Callback(name) => name.clone(),
+        CType::StructPtr(name) | CType::ConstStructPtr(name) => format!("ref {}", name),
+        ty => {
+            if let Some(s) = cs_scalar(ty) {
+                s.to_string()
+            } else {
+                "IntPtr".to_string()
+            }
+        }
     }
 }
 
-fn cs_params(f: &Function) -> String {
-    f.params
+/// The C# type of a struct field: delegates and scalars by name,
+/// every pointer as IntPtr (a field cannot be an out-parameter).
+fn cs_field(ty: &CType) -> String {
+    match ty {
+        CType::Callback(name) => name.clone(),
+        CType::Array(inner, _) => format!("{}[]", cs_scalar(inner).unwrap_or("byte")),
+        ty => {
+            if let Some(s) = cs_scalar(ty) {
+                s.to_string()
+            } else {
+                "IntPtr".to_string()
+            }
+        }
+    }
+}
+
+fn cs_params(params: &[crate::header::Param]) -> String {
+    params
         .iter()
-        .map(|p| format!("{} {}", cs_param(&p.ty), p.name))
+        .enumerate()
+        .map(|(i, p)| {
+            let name = if p.name.is_empty() {
+                format!("arg{}", i)
+            } else {
+                cs_ident(&p.name)
+            };
+            format!("{} {}", cs_param(p), name)
+        })
         .collect::<Vec<_>>()
         .join(", ")
+}
+
+/// Escape a C identifier that collides with a C# keyword (the
+/// collection's headers name out-parameters `out`, and parameters
+/// `base` and `in`). The `@` prefix keeps the name visible and
+/// exact: `@out`.
+fn cs_ident(name: &str) -> String {
+    const KEYWORDS: [&str; 78] = [
+        "abstract",
+        "as",
+        "base",
+        "bool",
+        "break",
+        "byte",
+        "case",
+        "catch",
+        "char",
+        "checked",
+        "class",
+        "const",
+        "continue",
+        "decimal",
+        "default",
+        "delegate",
+        "do",
+        "double",
+        "else",
+        "enum",
+        "event",
+        "explicit",
+        "extern",
+        "false",
+        "finally",
+        "fixed",
+        "float",
+        "for",
+        "foreach",
+        "goto",
+        "if",
+        "implicit",
+        "in",
+        "int",
+        "interface",
+        "internal",
+        "is",
+        "lock",
+        "long",
+        "namespace",
+        "new",
+        "null",
+        "object",
+        "operator",
+        "out",
+        "override",
+        "params",
+        "private",
+        "protected",
+        "public",
+        "readonly",
+        "record",
+        "ref",
+        "return",
+        "sbyte",
+        "sealed",
+        "short",
+        "sizeof",
+        "stackalloc",
+        "static",
+        "string",
+        "struct",
+        "switch",
+        "this",
+        "throw",
+        "true",
+        "try",
+        "typeof",
+        "uint",
+        "ulong",
+        "unchecked",
+        "unsafe",
+        "ushort",
+        "using",
+        "virtual",
+        "void",
+        "volatile",
+        "while",
+    ];
+    if KEYWORDS.contains(&name) {
+        format!("@{}", name)
+    } else {
+        name.to_string()
+    }
 }
 
 /// `notify_kit.dll` -> `NotifyKit`; `watchkit.dll` -> `Watchkit`.
