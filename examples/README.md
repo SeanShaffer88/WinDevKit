@@ -24,6 +24,31 @@ download `SettingsKit-0.1.0-x64.zip` from this repository's
 [Releases](https://github.com/SeanShaffer88/WinDevKit/releases),
 check it against the release's `SHA256SUMS.txt`, and unzip.
 
+## Every kit, from Python
+
+Every DLL kit now has a small Python example in
+`<kit>-python/` (and BridgeKit, the one program in the
+collection, has [`bridgekit-cli/`](bridgekit-cli/)): load the
+DLL, print its version, and — where a kit has a safe read-only
+first call — make it. ArchiveKit lists a zip it builds itself,
+MediaKit probes a WAV it writes, PathKit validates a path
+string, ShellInteropKit looks up a file type name, FileMetaKit
+reads a file's metadata, VaultKit lists a credential namespace.
+
+The pattern every example teaches is the collection's string
+rule: strings the DLL returns are caller-owned (copy them out,
+then free them with the kit's `*_free_string`), except version
+and last-error strings, which are borrowed. Each example names
+the DLL to download from
+[Releases](https://github.com/SeanShaffer88/WinDevKit/releases)
+and points at the kit's header for the full contract.
+
+For C# and Rust consumers there is also the **bindings pack**
+on the Releases page (`WinDevKit-Bindings-1.0.0.zip`):
+BridgeKit-generated bindings for every kit, ready to drop into
+a project — regenerated from the shipped headers by
+`tools/bindings-pack.py`.
+
 ## Release evidence
 
 [`release-evidence/`](release-evidence/) holds a worked example of

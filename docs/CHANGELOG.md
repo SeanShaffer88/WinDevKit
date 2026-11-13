@@ -4,6 +4,31 @@ Notable changes to WinDevKit as a whole. Individual kits also keep
 their own release history; kit releases before 2026-11-01 were
 published from the standalone kit repositories (now archived).
 
+## 2026-11-13 — VM verification pack
+
+- New `tools/vm-verify/`: a reusable clean-machine check for
+  Windows releases (PAIN_POINTS #54) — `Verify-Release.ps1`
+  verifies hashes against SHA256SUMS.txt, extracts fresh,
+  flags non-system DLL imports, and on Windows loads each DLL
+  and calls its `<prefix>_version` export, filing
+  `verify-report.json` as evidence; `Get-PeInfo.ps1` is a
+  dependency-free PE header parser that runs anywhere (the load
+  test reports Skipped, never Passed, off Windows).
+
+## 2026-11-13 — Examples for every kit + the bindings pack
+
+- `examples/` now covers the whole collection: a runnable
+  Python (ctypes) example per DLL kit (load, version handshake,
+  the caller-owned string rule, and a real read-only call where
+  a kit has a safe one), a CLI example for BridgeKit, and the
+  existing SettingsKit C#/Python pair. Index in
+  `examples/README.md`.
+- New release asset: `WinDevKit-Bindings-1.0.0.zip` (+
+  `SHA256SUMS.txt`) — BridgeKit-generated C# and Rust bindings
+  for all 35 kit headers, built by `tools/bindings-pack.py`;
+  the pack's C# compiles as one assembly and its Rust as one
+  crate, both verified at pack time.
+
 ## 2026-11-13 — win-common: the shared modules live in one place
 
 - New first-party foundation crate `crates/win-common`: the family

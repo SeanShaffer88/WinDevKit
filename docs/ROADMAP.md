@@ -34,19 +34,24 @@
 
 ## Next
 
-- A shared `win-common` crate for the Win32 interop boilerplate
-  several kits currently carry individually.
-- Runnable examples for every kit, plus a generated-bindings pack
-  (BridgeKit output for all headers) published as a release asset.
-- A VM verification kit: reusable clean-machine verification for
-  Windows projects.
+- (Nothing queued — the three items below landed 2026-11-13;
+  new roadmap items follow the pain points.)
+
+Done since: the shared `win-common` crate (2026-11-13, Slice B —
+the JSON engine, SHA-256 and FFI helpers consolidated; see
+`crates/win-common/`), and runnable examples for every kit plus
+the generated-bindings pack release (2026-11-13, Slice C — see
+`examples/` and `tools/bindings-pack.py`); and the VM
+verification kit (2026-11-13, Slice D — `tools/vm-verify/`,
+PAIN_POINTS #54).
 
 ## Open, from the original roadmap
 
 - A shared `win-common` crate for the Win32 interop boilerplate
-  several kits and apps currently carry individually.
+  several kits and apps currently carry individually. (Done
+  2026-11-13 — see Next above.)
 - A VM verification kit: reusable clean-machine verification for
-  Windows projects.
+  Windows projects. (Done 2026-11-13 — `tools/vm-verify/`.)
 - A packaging kit: one-command packaging built on the release
   template. (Superseded outside this repo: the suite's packaging
   now lives in SeanPak.)
