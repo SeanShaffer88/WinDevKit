@@ -113,6 +113,6 @@ fn cli_unknown_type_exits_1_and_names_the_token() {
     ]);
     assert_eq!(output.status.code(), Some(1));
     let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(stderr.contains("'float'"), "stderr was: {stderr}");
+    assert!(stderr.contains("'wchar_t'"), "stderr was: {stderr}");
     assert!(!out.exists(), "no output file may be written on failure");
 }

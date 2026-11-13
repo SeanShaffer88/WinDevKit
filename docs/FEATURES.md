@@ -22,6 +22,10 @@ licensed.
 - **Fixtures and release evidence** — `fixtures.py` builds and
   checks filesystem fixtures; `release-evidence.py` and
   `rea-summary.py` assemble release verification evidence.
+- **Catalog generator** — `catalog.py` generates the collection
+  catalog (`docs/CATALOG.md`) from the kits' own folders and
+  versions and checks it in CI, so the catalog cannot promise
+  downloads that do not exist.
 
 ## Templates (`templates/`)
 

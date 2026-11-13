@@ -60,15 +60,16 @@ Parses the DLL's PE export table and compares it with the header:
 
 ## The header grammar
 
-BridgeKit parses exactly the header dialect the collection ships — surveyed against NotifyKit, WatchKit and SignKit — and nothing more:
+BridgeKit parses exactly the header dialect the collection ships — first surveyed against NotifyKit, WatchKit and SignKit, then re-surveyed against all 33 shipped headers in November 2026 — and nothing more:
 
-- Prototypes `RET prefix_name(params);`, optionally led by an export macro (`NO_API`, `WA_API`, ...), possibly spanning lines. Comments and preprocessor lines are ignored; `typedef` / `enum` / `struct` statements are skipped; the `extern "C"` wrapper is unwrapped.
-- Types: `void`, `int`, `unsigned int`, `uint32_t`, `uint64_t`, `const char *`, `char *`, `char **`, `void *`, `const void *`, and opaque handles `Name *` / `Name **` where `Name` is a capitalized typedef'd struct name.
+- Prototypes `RET prefix_name(params);`, optionally led by an export macro (`NO_API`, `WA_API`, ...), possibly spanning lines. Comments and preprocessor lines are ignored; `enum` statements are skipped; the `extern "C"` wrapper is unwrapped.
+- Types: `void`, `int`, `unsigned int`, `uint32_t`, `uint64_t`, `int64_t`, `uint8_t`, `size_t`, `float`, `double`, `const char *`, `char *`, `char **`, `void *`, `const void *`, opaque handles `Name *` / `Name **` / `const Name *` where `Name` is a capitalized typedef'd struct name, scalar pointers `T *` / `T **` / `const T *` for the numeric types, function-pointer typedefs (generated as C# delegates and Rust function-pointer aliases), and concrete structs such as a callbacks struct (generated as a C# sequential-layout struct and a Rust `#[repr(C)]` struct, fixed-size array fields included).
+- A scalar `T *` parameter is an out-parameter when its name says so (`out`, `out_*`, `*_out`, `found`) and a by-value buffer pointer otherwise — the header's own naming decides, never the pointed-to type alone.
 - **Anything else is a hard error naming the offending token.** BridgeKit never guesses a mapping: a guessed signature compiles, loads, and lies at runtime. If a kit grows a genuinely new type, extend the grammar in `src/header.rs` with its test in the same change.
 
 ## Notes and limits
 
-- Generation is deterministic: the same header produces byte-identical output (the test suite pins golden files generated from trimmed copies of the three surveyed kits' real headers).
+- Generation is deterministic: the same header produces byte-identical output (the test suite pins golden files generated from trimmed copies of real kit headers). A collection-wide test parses and generates both languages for every shipped kit header, and the generated bindings for the whole collection compile together in both C# and Rust (verified 2026-11-12). Parameter names that collide with target-language keywords are escaped (`@out` in C#, `r#in` in Rust) so the generated code always compiles.
 - `verify` reads named exports only; ordinal-only exports cannot be matched to a header and are ignored.
 - The generated C# marshals `string` parameters with the default (ANSI) P/Invoke charset, which is what the kits' consumers use for their JSON payloads today; returned strings are always read as UTF-8.
 - Windows runtime behaviour of the *generated bindings* belongs to the consuming app to field-test — BridgeKit's own evidence is the golden corpus plus `verify` runs against real built DLLs (SignKit's shipped `sign_kit.dll` passes 7/7).

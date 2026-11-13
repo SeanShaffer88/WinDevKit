@@ -64,6 +64,17 @@ pub fn generate(header: &Header, header_name: &str) -> Result<String, String> {
             uses(&p.ty);
         }
     }
+    for cb in &header.callbacks {
+        uses(&cb.ret);
+        for p in &cb.params {
+            uses(&p.ty);
+        }
+    }
+    for st in &header.structs {
+        for field in &st.fields {
+            uses(&field.ty);
+        }
+    }
     raw.sort_unstable();
     let has_wrappers = header.functions.iter().any(|f| f.ret.is_string_return());
     if has_wrappers {
@@ -82,6 +93,36 @@ pub fn generate(header: &Header, header_name: &str) -> Result<String, String> {
             "pub struct {} {{\n    _private: [u8; 0],\n}}\n\n",
             name
         ));
+    }
+
+    for cb in &header.callbacks {
+        let params = cb
+            .params
+            .iter()
+            .map(|p| rs_type(&p.ty))
+            .collect::<Vec<_>>()
+            .join(", ");
+        out.push_str(&format!(
+            "pub type {} = Option<unsafe extern \"C\" fn({})",
+            cb.name, params
+        ));
+        if cb.ret != CType::Void {
+            out.push_str(&format!(" -> {}", rs_type(&cb.ret)));
+        }
+        out.push_str(">;\n\n");
+    }
+
+    for st in &header.structs {
+        out.push_str("#[repr(C)]\n#[derive(Clone, Copy)]\n");
+        out.push_str(&format!("pub struct {} {{\n", st.name));
+        for field in &st.fields {
+            out.push_str(&format!(
+                "    pub {}: {},\n",
+                rs_ident(&field.name),
+                rs_type(&field.ty)
+            ));
+        }
+        out.push_str("}\n\n");
     }
 
     out.push_str("extern \"C\" {\n");
@@ -114,7 +155,7 @@ fn wrapper(f: &Function, free_fn: Option<&str>) -> String {
     let call_args = f
         .params
         .iter()
-        .map(|p| p.name.as_str())
+        .map(|p| rs_ident(&p.name))
         .collect::<Vec<_>>()
         .join(", ");
     let mut s = String::new();
@@ -158,6 +199,11 @@ fn rs_type(ty: &CType) -> String {
         CType::UInt => "c_uint".to_string(),
         CType::U32 => "u32".to_string(),
         CType::U64 => "u64".to_string(),
+        CType::I64 => "i64".to_string(),
+        CType::U8 => "u8".to_string(),
+        CType::SizeT => "usize".to_string(),
+        CType::F32 => "f32".to_string(),
+        CType::F64 => "f64".to_string(),
         CType::ConstCharPtr => "*const c_char".to_string(),
         CType::CharPtr => "*mut c_char".to_string(),
         CType::CharPtrPtr => "*mut *mut c_char".to_string(),
@@ -165,13 +211,38 @@ fn rs_type(ty: &CType) -> String {
         CType::ConstVoidPtr => "*const c_void".to_string(),
         CType::HandlePtr(n) => format!("*mut {}", n),
         CType::HandlePtrPtr(n) => format!("*mut *mut {}", n),
+        CType::ConstHandlePtr(n) => format!("*const {}", n),
+        CType::ScalarPtr(inner) => format!("*mut {}", rs_type(inner)),
+        CType::ConstScalarPtr(inner) => format!("*const {}", rs_type(inner)),
+        CType::ScalarPtrPtr(inner) => format!("*mut *mut {}", rs_type(inner)),
+        CType::Callback(n) => n.clone(),
+        CType::StructPtr(n) => format!("*mut {}", n),
+        CType::ConstStructPtr(n) => format!("*const {}", n),
+        CType::Array(inner, n) => format!("[{}; {}]", rs_type(inner), n),
     }
 }
 
 fn rs_params(f: &Function) -> String {
     f.params
         .iter()
-        .map(|p| format!("{}: {}", p.name, rs_type(&p.ty)))
+        .map(|p| format!("{}: {}", rs_ident(&p.name), rs_type(&p.ty)))
         .collect::<Vec<_>>()
         .join(", ")
+}
+
+/// Escape a C identifier that collides with a Rust keyword (the
+/// collection's own TimeKit names a parameter `in`). Raw identifiers
+/// keep the name visible and exact: `r#in`.
+fn rs_ident(name: &str) -> String {
+    const KEYWORDS: [&str; 35] = [
+        "as", "async", "await", "break", "const", "continue", "crate", "dyn", "else", "enum",
+        "extern", "fn", "for", "if", "impl", "in", "let", "loop", "match", "mod", "move", "mut",
+        "pub", "ref", "return", "self", "static", "struct", "super", "trait", "type", "unsafe",
+        "use", "where", "while",
+    ];
+    if KEYWORDS.contains(&name) {
+        format!("r#{}", name)
+    } else {
+        name.to_string()
+    }
 }
