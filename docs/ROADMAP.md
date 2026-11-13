@@ -6,9 +6,17 @@
   expansion and field-verified end to end on a real Windows
   machine (smoke pack 116/116 plus both manual demos,
   2026-10-28).
-- Download releases for every kit (from the standalone
-  repositories, now archived; their releases remain live).
-- The collection catalog (`docs/CATALOG.md`).
+- Download releases for every kit from this repository (the
+  standalone repositories the original releases lived in were
+  deleted after the merge; the full collection was re-released
+  from here on 2026-11-12, in one `kits-release` ALL dispatch).
+- The collection catalog (`docs/CATALOG.md`) — generated from the
+  kits' own folders and versions by `tools/catalog.py` and checked
+  in CI, so it cannot drift from what actually downloads.
+- BridgeKit's grammar covers every shipped kit header (v0.2.0):
+  bindings generate for all 33 headers and compile in C# and Rust.
+- Runnable examples (`examples/`): SettingsKit from C# (BridgeKit-
+  generated binding) and from Python (ctypes).
 - The monorepo merge (2026-11-01): one repository, one CI gate
   (`kits-ci`, 34/34 green), one release workflow (`kits-release`),
   static-CRT builds for every kit.
