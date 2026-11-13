@@ -23,7 +23,21 @@ checks were in at the last full pass. Detail lives in
   temp-folder checks per kit), plus two manual demos for the
   features a script cannot see (toast display, jump lists).
 
-## State at the last full pass (2026-11-01)
+## State at the last full pass (2026-11-12)
+
+- The catalog audit found most catalog download links dead (the
+  standalone kit repositories had been deleted after the merge).
+  The full collection was re-released from this repository, the
+  catalog was rebuilt as a generated, CI-checked document
+  (`tools/catalog.py`), and a final online link audit of the new
+  catalog passed for every entry.
+- BridgeKit v0.2.0's grammar was verified against all 33 shipped
+  kit headers: every header parses and generates, and the
+  generated bindings compile together in C# and in Rust.
+- The Python tools' suite, including the new catalog checks,
+  passes locally and in the `python-tests` workflow.
+
+## State at the previous full pass (2026-11-01)
 
 - `kits-ci` on the merged tree: **34/34 jobs green**, both before
   and after the static-CRT template pass. The first static-CRT
